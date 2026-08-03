@@ -6,8 +6,11 @@ export default {
     orders: 'Orders',
     finance: 'Finance',
     demandForecast: 'Demand Forecast',
+    restocking: 'Restocking',
     companyName: 'Catalyst Components',
-    subtitle: 'Inventory Management System'
+    subtitle: 'Inventory Management System',
+    collapseSidebar: 'Collapse sidebar',
+    expandSidebar: 'Expand sidebar'
   },
 
   // Dashboard
@@ -126,6 +129,19 @@ export default {
       status: 'Status',
       expectedDelivery: 'Expected Delivery',
       actualDelivery: 'Actual Delivery'
+    },
+    submittedOrders: {
+      title: 'Submitted Orders',
+      description: 'Restocking orders placed from budget-based recommendations',
+      noOrders: 'No restocking orders submitted yet',
+      orderNumber: 'Order Number',
+      budget: 'Budget',
+      totalCost: 'Total Cost',
+      leadTime: 'Lead Time',
+      leadTimeDays: '{count} days',
+      orderDate: 'Order Date',
+      expectedDelivery: 'Expected Delivery',
+      status: 'Status'
     }
   },
 
@@ -185,6 +201,34 @@ export default {
       change: 'Change',
       trend: 'Trend',
       period: 'Period'
+    }
+  },
+
+  // Restocking
+  restocking: {
+    title: 'Restocking',
+    description: 'Set a budget and get recommended items to restock based on demand forecasts',
+    budgetLabel: 'Available Budget',
+    recommendedItems: 'Recommended Items',
+    noRecommendations: 'No items to recommend at this budget. Increase the budget to see recommendations.',
+    itemsSelected: '{count} items recommended',
+    totalCost: 'Total Cost',
+    remainingBudget: 'Remaining Budget',
+    placeOrder: 'Place Order',
+    placingOrder: 'Placing Order...',
+    orderSuccess: 'Restocking order submitted successfully',
+    orderError: 'Failed to submit restocking order',
+    table: {
+      sku: 'SKU',
+      itemName: 'Item Name',
+      category: 'Category',
+      warehouse: 'Warehouse',
+      trend: 'Trend',
+      quantityOnHand: 'Quantity on Hand',
+      forecastedDemand: 'Forecasted Demand',
+      unitCost: 'Unit Cost',
+      recommendedQuantity: 'Recommended Qty',
+      recommendedCost: 'Cost'
     }
   },
 

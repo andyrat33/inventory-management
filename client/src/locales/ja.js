@@ -6,8 +6,11 @@ export default {
     orders: '注文',
     finance: '財務',
     demandForecast: '需要予測',
+    restocking: '再入荷',
     companyName: '触媒コンポーネンツ',
-    subtitle: '在庫管理システム'
+    subtitle: '在庫管理システム',
+    collapseSidebar: 'サイドバーを折りたたむ',
+    expandSidebar: 'サイドバーを展開'
   },
 
   // Dashboard
@@ -126,6 +129,19 @@ export default {
       status: 'ステータス',
       expectedDelivery: '予定配達日',
       actualDelivery: '実際の配達日'
+    },
+    submittedOrders: {
+      title: '提出済み注文',
+      description: '予算に基づく推奨から発注された再入荷注文',
+      noOrders: 'まだ再入荷注文が提出されていません',
+      orderNumber: '注文番号',
+      budget: '予算',
+      totalCost: '合計金額',
+      leadTime: 'リードタイム',
+      leadTimeDays: '{count}日',
+      orderDate: '注文日',
+      expectedDelivery: '予定配達日',
+      status: 'ステータス'
     }
   },
 
@@ -185,6 +201,34 @@ export default {
       change: '変化',
       trend: 'トレンド',
       period: '期間'
+    }
+  },
+
+  // Restocking
+  restocking: {
+    title: '再入荷',
+    description: '予算を設定し、需要予測に基づいて再入荷すべき品目の推奨を受け取る',
+    budgetLabel: '利用可能な予算',
+    recommendedItems: '推奨品目',
+    noRecommendations: 'この予算では推奨できる品目がありません。予算を増やすと推奨が表示されます。',
+    itemsSelected: '{count}件の品目を推奨',
+    totalCost: '合計金額',
+    remainingBudget: '残りの予算',
+    placeOrder: '注文する',
+    placingOrder: '注文中...',
+    orderSuccess: '再入荷注文が正常に提出されました',
+    orderError: '再入荷注文の提出に失敗しました',
+    table: {
+      sku: 'SKU',
+      itemName: '品目名',
+      category: 'カテゴリ',
+      warehouse: '倉庫',
+      trend: 'トレンド',
+      quantityOnHand: '手持在庫数',
+      forecastedDemand: '予測需要',
+      unitCost: '単価',
+      recommendedQuantity: '推奨数量',
+      recommendedCost: '金額'
     }
   },
 
@@ -359,7 +403,14 @@ export default {
     '48V DC Power Supply Unit': '48V DC電源ユニット',
     'USB-C PD 100W Power Supply': 'USB-C PD 100W電源',
     'Battery Backup Power Supply': 'バッテリバックアップ電源',
-    'Adjustable Bench Power Supply': '可変ベンチ電源'
+    'Adjustable Bench Power Supply': '可変ベンチ電源',
+    'Industrial Widget Type A': '産業用ウィジェットA型',
+    'Steel Bearing Assembly': 'スチールベアリング組立',
+    'High-Temperature Gasket': '耐熱ガスケット',
+    'Electric Motor 5HP': '電動モータ5馬力',
+    'Oil Filter Cartridge': 'オイルフィルターカートリッジ',
+    'Pressure Relief Valve': '安全弁',
+    'Logic Controller Board': 'ロジックコントローラー基板'
   },
 
   // Customer Names
