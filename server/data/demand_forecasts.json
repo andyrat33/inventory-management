@@ -6,7 +6,12 @@
     "current_demand": 300,
     "forecasted_demand": 450,
     "trend": "increasing",
-    "period": "Next 30 days"
+    "period": "Next 30 days",
+    "category": "Industrial Parts",
+    "warehouse": "London",
+    "quantity_on_hand": 180,
+    "reorder_point": 250,
+    "unit_cost": 145.00
   },
   {
     "id": "2",
@@ -15,7 +20,12 @@
     "current_demand": 150,
     "forecasted_demand": 152,
     "trend": "stable",
-    "period": "Next 30 days"
+    "period": "Next 30 days",
+    "category": "Bearings",
+    "warehouse": "Tokyo",
+    "quantity_on_hand": 95,
+    "reorder_point": 120,
+    "unit_cost": 38.50
   },
   {
     "id": "3",
@@ -24,7 +34,12 @@
     "current_demand": 500,
     "forecasted_demand": 600,
     "trend": "increasing",
-    "period": "Next 30 days"
+    "period": "Next 30 days",
+    "category": "Seals & Gaskets",
+    "warehouse": "San Francisco",
+    "quantity_on_hand": 280,
+    "reorder_point": 350,
+    "unit_cost": 22.75
   },
   {
     "id": "4",
@@ -33,7 +48,12 @@
     "current_demand": 50,
     "forecasted_demand": 35,
     "trend": "decreasing",
-    "period": "Next 30 days"
+    "period": "Next 30 days",
+    "category": "Motors",
+    "warehouse": "Tokyo",
+    "quantity_on_hand": 85,
+    "reorder_point": 30,
+    "unit_cost": 610.00
   },
   {
     "id": "5",
@@ -42,7 +62,12 @@
     "current_demand": 800,
     "forecasted_demand": 950,
     "trend": "increasing",
-    "period": "Next 30 days"
+    "period": "Next 30 days",
+    "category": "Filters",
+    "warehouse": "San Francisco",
+    "quantity_on_hand": 520,
+    "reorder_point": 600,
+    "unit_cost": 16.40
   },
   {
     "id": "6",
@@ -51,7 +76,12 @@
     "current_demand": 120,
     "forecasted_demand": 121,
     "trend": "stable",
-    "period": "Next 30 days"
+    "period": "Next 30 days",
+    "category": "Valves",
+    "warehouse": "London",
+    "quantity_on_hand": 70,
+    "reorder_point": 90,
+    "unit_cost": 89.00
   },
   {
     "id": "7",
@@ -60,7 +90,12 @@
     "current_demand": 250,
     "forecasted_demand": 252,
     "trend": "stable",
-    "period": "Next 30 days"
+    "period": "Next 30 days",
+    "category": "Power Supplies",
+    "warehouse": "San Francisco",
+    "quantity_on_hand": 420,
+    "reorder_point": 180,
+    "unit_cost": 18.99
   },
   {
     "id": "8",
@@ -69,7 +104,12 @@
     "current_demand": 180,
     "forecasted_demand": 182,
     "trend": "stable",
-    "period": "Next 30 days"
+    "period": "Next 30 days",
+    "category": "Sensors",
+    "warehouse": "Tokyo",
+    "quantity_on_hand": 110,
+    "reorder_point": 140,
+    "unit_cost": 47.50
   },
   {
     "id": "9",
@@ -78,6 +118,11 @@
     "current_demand": 95,
     "forecasted_demand": 96,
     "trend": "stable",
-    "period": "Next 30 days"
+    "period": "Next 30 days",
+    "category": "Controllers",
+    "warehouse": "London",
+    "quantity_on_hand": 55,
+    "reorder_point": 90,
+    "unit_cost": 210.00
   }
 ]

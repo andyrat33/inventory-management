@@ -323,10 +323,10 @@ export default {
 
 .card {
   background: white;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
 }
 
 .card-header {
@@ -422,9 +422,9 @@ export default {
 
 .stat-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
   border-left: 4px solid #3b82f6;
 }
 
