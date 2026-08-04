@@ -117,5 +117,10 @@ export const api = {
   async createRestockingOrder(budget) {
     const response = await axios.post(`${API_BASE_URL}/restocking-orders`, { budget })
     return response.data
+  },
+
+  async getRestockingOrder(orderId) {
+    const response = await axios.get(`${API_BASE_URL}/restocking-orders/${orderId}`)
+    return response.data
   }
 }
