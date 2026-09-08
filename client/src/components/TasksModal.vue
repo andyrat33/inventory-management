@@ -2,17 +2,27 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="isOpen" class="modal-overlay" @click="close">
-        <div class="modal-container tasks-modal-container" @click.stop>
+        <div
+          ref="dialogRef"
+          class="modal-container tasks-modal-container"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="tasks-modal-title"
+          tabindex="-1"
+          @click.stop
+        >
           <div class="modal-header">
-            <h3 class="modal-title">{{ t('tasks.title') }}</h3>
-            <button class="close-button" @click="close">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <h3 id="tasks-modal-title" class="modal-title">{{ t('tasks.title') }}</h3>
+            <button class="close-button" :aria-label="t('common.close')" @click="close">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
           </div>
 
           <div class="modal-body">
+            <div v-if="error" class="task-error-banner">{{ error }}</div>
+
             <!-- Add Task Form -->
             <div class="task-form">
               <div class="form-row">
@@ -32,11 +42,7 @@
               <div class="form-row">
                 <div class="form-group">
                   <label for="task-priority">{{ t('tasks.priority') }}</label>
-                  <select
-                    id="task-priority"
-                    v-model="newTask.priority"
-                    class="task-select"
-                  >
+                  <select id="task-priority" v-model="newTask.priority" class="task-select">
                     <option value="high">{{ t('priority.high') }}</option>
                     <option value="medium">{{ t('priority.medium') }}</option>
                     <option value="low">{{ t('priority.low') }}</option>
@@ -45,16 +51,15 @@
 
                 <div class="form-group">
                   <label for="task-due-date">{{ t('tasks.dueDate') }}</label>
-                  <input
-                    id="task-due-date"
-                    v-model="newTask.dueDate"
-                    type="date"
-                    class="task-input"
-                  />
+                  <input id="task-due-date" v-model="newTask.dueDate" type="date" class="task-input" />
                 </div>
 
                 <div class="form-group-btn">
-                  <button @click="handleAddTask" class="task-add-btn" :disabled="!newTask.title.trim() || !newTask.dueDate">
+                  <button
+                    @click="handleAddTask"
+                    class="task-add-btn"
+                    :disabled="!newTask.title.trim() || !newTask.dueDate"
+                  >
                     {{ t('tasks.addTask') }}
                   </button>
                 </div>
@@ -85,9 +90,26 @@
                     />
                     <span class="task-title" @click="$emit('toggle-task', task.id)">{{ task.title }}</span>
                   </div>
-                  <button @click="$emit('delete-task', task.id)" class="task-delete-btn" title="Delete task">
-                    ×
-                  </button>
+                  <div class="task-delete-wrap">
+                    <template v-if="confirmingId === task.id">
+                      <button type="button" class="task-confirm-delete-btn" @click="confirmDelete(task.id)">
+                        {{ t('tasks.confirmDelete') }}
+                      </button>
+                      <button type="button" class="task-cancel-delete-btn" @click="confirmingId = null">
+                        {{ t('common.cancel') }}
+                      </button>
+                    </template>
+                    <button
+                      v-else
+                      type="button"
+                      @click="confirmingId = task.id"
+                      class="task-delete-btn"
+                      :title="t('tasks.deleteTask')"
+                      :aria-label="t('tasks.deleteTask')"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
 
                 <div class="task-footer">
@@ -96,8 +118,13 @@
                   </span>
                   <div class="task-due-date">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <rect x="2" y="3" width="10" height="9" rx="1" stroke="currentColor" stroke-width="1.2"/>
-                      <path d="M4.5 1.5V4.5M9.5 1.5V4.5M2 6H12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                      <rect x="2" y="3" width="10" height="9" rx="1" stroke="currentColor" stroke-width="1.2" />
+                      <path
+                        d="M4.5 1.5V4.5M9.5 1.5V4.5M2 6H12"
+                        stroke="currentColor"
+                        stroke-width="1.2"
+                        stroke-linecap="round"
+                      />
                     </svg>
                     {{ formatDueDate(task.dueDate) }}
                   </div>
@@ -121,6 +148,7 @@
 <script>
 import { ref, computed } from 'vue'
 import { useI18n } from '../composables/useI18n'
+import { useModal } from '../composables/useModal'
 
 export default {
   name: 'TasksModal',
@@ -132,6 +160,10 @@ export default {
     tasks: {
       type: Array,
       default: () => []
+    },
+    error: {
+      type: String,
+      default: null
     }
   },
   emits: ['close', 'add-task', 'delete-task', 'toggle-task'],
@@ -148,9 +180,22 @@ export default {
       return [...props.tasks]
     })
 
+    const dialogRef = ref(null)
+
+    // Which task (if any) is showing its inline "Delete? / Cancel" confirm
+    const confirmingId = ref(null)
+
+    const confirmDelete = (id) => {
+      emit('delete-task', id)
+      confirmingId.value = null
+    }
+
     const close = () => {
+      confirmingId.value = null
       emit('close')
     }
+
+    useModal(() => props.isOpen, close, dialogRef)
 
     const handleAddTask = () => {
       if (newTask.value.title.trim() && newTask.value.dueDate) {
@@ -169,6 +214,7 @@ export default {
 
     const formatDueDate = (dateString) => {
       const date = new Date(dateString)
+      if (isNaN(date.getTime())) return '—'
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       const dueDate = new Date(date)
@@ -196,9 +242,10 @@ export default {
     const getStatusClass = (dueDate, status) => {
       if (status === 'completed') return 'completed'
 
+      const due = new Date(dueDate)
+      if (isNaN(due.getTime())) return ''
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      const due = new Date(dueDate)
       due.setHours(0, 0, 0, 0)
 
       const diffTime = due - today
@@ -215,6 +262,7 @@ export default {
       if (status === 'completed') return isJapanese ? '完了' : 'Completed'
 
       const statusClass = getStatusClass(dueDate, status)
+      if (!statusClass) return '—'
       if (statusClass === 'overdue') return isJapanese ? '期限超過' : 'Overdue'
       if (statusClass === 'urgent') return isJapanese ? 'もうすぐ期限' : 'Due Soon'
       return isJapanese ? '予定' : 'Upcoming'
@@ -222,15 +270,18 @@ export default {
 
     const translatePriority = (priority) => {
       const priorityMap = {
-        'high': t('priority.high'),
-        'medium': t('priority.medium'),
-        'low': t('priority.low')
+        high: t('priority.high'),
+        medium: t('priority.medium'),
+        low: t('priority.low')
       }
       return priorityMap[priority] || priority
     }
 
     return {
       t,
+      dialogRef,
+      confirmingId,
+      confirmDelete,
       newTask,
       sortedTasks,
       close,
@@ -306,6 +357,16 @@ export default {
   color: #0f172a;
 }
 
+.close-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.task-delete-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
 .modal-body {
   padding: 2rem;
   overflow-y: auto;
@@ -333,6 +394,16 @@ export default {
 
 .btn-secondary:hover {
   background: #e2e8f0;
+}
+
+.task-error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #ef4444;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
 }
 
 /* Task Form */
@@ -404,7 +475,9 @@ label {
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
   white-space: nowrap;
   height: fit-content;
 }
@@ -502,7 +575,7 @@ label {
 
 .task-item.completed .task-title {
   text-decoration: line-through;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .task-delete-btn {
@@ -526,6 +599,49 @@ label {
 .task-delete-btn:hover {
   background: #dc2626;
   transform: scale(1.1);
+}
+
+.task-delete-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.task-confirm-delete-btn,
+.task-cancel-delete-btn {
+  padding: 0.25rem 0.625rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.task-confirm-delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.task-confirm-delete-btn:hover {
+  background: #dc2626;
+}
+
+.task-cancel-delete-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.task-cancel-delete-btn:hover {
+  background: #e2e8f0;
+}
+
+.task-confirm-delete-btn:focus-visible,
+.task-cancel-delete-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .task-footer {
@@ -567,7 +683,7 @@ label {
 }
 
 .task-due-date svg {
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .status-badge {

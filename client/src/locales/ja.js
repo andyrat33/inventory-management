@@ -7,10 +7,20 @@ export default {
     finance: '財務',
     demandForecast: '需要予測',
     restocking: '再入荷',
+    reports: 'レポート',
     companyName: '触媒コンポーネンツ',
     subtitle: '在庫管理システム',
     collapseSidebar: 'サイドバーを折りたたむ',
     expandSidebar: 'サイドバーを展開'
+  },
+
+  // Login
+  login: {
+    title: 'サインイン',
+    demoNote: 'デモ環境 — 任意の値でサインインできます。',
+    email: 'メールアドレス',
+    password: 'パスワード',
+    signIn: 'サインイン'
   },
 
   // Dashboard
@@ -58,10 +68,12 @@ export default {
       daysDelayed: '遅延日数',
       priority: '優先度',
       unitsShort: '単位不足',
-      days: '日'
+      days: '日',
+      viewShortageDetail: '{name}の在庫不足の詳細を表示'
     },
     topProducts: {
       title: '収益別トップ製品',
+      viewProductDetail: '{name}の詳細を表示',
       sku: 'SKU',
       product: '製品',
       category: 'カテゴリ',
@@ -83,6 +95,7 @@ export default {
     skus: 'SKU',
     searchPlaceholder: '品目名で検索...',
     clearSearch: '検索をクリア',
+    viewItemDetail: '{name}の詳細を表示',
     exportCsv: 'CSVエクスポート',
     totalItems: '総品目数',
     totalValue: '総価値',
@@ -143,6 +156,41 @@ export default {
       orderDate: '注文日',
       expectedDelivery: '予定配達日',
       status: 'ステータス'
+    },
+    restockingLoadError: '提出済みの再入荷注文を読み込めませんでした。'
+  },
+
+  // Reports
+  reports: {
+    title: 'パフォーマンスレポート',
+    description: '四半期の業績指標と月次トレンドを表示します',
+    loading: 'レポートを読み込んでいます...',
+    loadError: 'レポートの読み込みに失敗しました: {message}',
+    notAvailable: '該当なし',
+    quarterly: {
+      title: '四半期業績',
+      quarter: '四半期',
+      totalOrders: '総注文数',
+      totalRevenue: '総収益',
+      avgOrderValue: '平均注文額',
+      fulfillmentRate: '出荷完了率'
+    },
+    monthlyTrend: {
+      title: '月次収益トレンド'
+    },
+    momAnalysis: {
+      title: '前月比分析',
+      month: '月',
+      orders: '注文数',
+      revenue: '収益',
+      change: '増減',
+      growthRate: '成長率'
+    },
+    summary: {
+      totalRevenueYtd: '総収益（年初来）',
+      avgMonthlyRevenue: '月平均収益',
+      totalOrdersYtd: '総注文数（年初来）',
+      bestQuarter: '最高業績の四半期'
     }
   },
 
@@ -180,7 +228,8 @@ export default {
       description: '説明',
       vendor: 'ベンダー',
       date: '日付',
-      amount: '金額'
+      amount: '金額',
+      viewTransactionDetail: '取引{id}の詳細を表示'
     }
   },
 
@@ -240,7 +289,8 @@ export default {
     category: 'カテゴリ',
     orderStatus: '注文ステータス',
     all: 'すべて',
-    allMonths: 'すべての月'
+    allMonths: 'すべての月',
+    resetAll: 'すべてのフィルターをリセット'
   },
 
   // Statuses
@@ -346,7 +396,13 @@ export default {
     priority: '優先度',
     dueDate: '期限',
     addTask: 'タスクを追加',
-    noTasks: 'タスクがありません。上記からタスクを追加してください！'
+    deleteTask: 'タスクを削除',
+    confirmDelete: '削除しますか？',
+    noTasks: 'タスクがありません。上記からタスクを追加してください！',
+    errorLoad: 'タスクを読み込めませんでした。このウィンドウを開き直してください。',
+    errorAdd: 'タスクを追加できませんでした。もう一度お試しください。',
+    errorDelete: 'タスクを削除できませんでした。もう一度お試しください。',
+    errorToggle: 'タスクを更新できませんでした。もう一度お試しください。'
   },
 
   // Language

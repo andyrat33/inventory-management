@@ -11,6 +11,15 @@ const translations = {
 const savedLocale = localStorage.getItem('app-locale') || 'en'
 const currentLocale = ref(savedLocale)
 
+// Keep <html lang> in sync so screen readers, hyphenation and :lang() styling
+// follow the active locale (set once now, then on every setLocale).
+const syncHtmlLang = (locale) => {
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = locale
+  }
+}
+syncHtmlLang(savedLocale)
+
 // Currency is automatically set based on locale (en -> USD, ja -> JPY)
 const currentCurrency = computed(() => {
   return currentLocale.value === 'ja' ? 'JPY' : 'USD'
@@ -61,6 +70,7 @@ export function useI18n() {
     if (translations[locale]) {
       currentLocale.value = locale
       localStorage.setItem('app-locale', locale)
+      syncHtmlLang(locale)
     }
   }
 
@@ -96,8 +106,8 @@ export function useI18n() {
       // Handle city names
       const cityMap = {
         'San Francisco': 'サンフランシスコ',
-        'London': 'ロンドン',
-        'Tokyo': '東京'
+        London: 'ロンドン',
+        Tokyo: '東京'
       }
 
       if (cityMap[warehouseName]) {

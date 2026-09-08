@@ -33,8 +33,9 @@
                 @click="searchQuery = ''"
                 class="clear-search"
                 :title="t('inventory.clearSearch')"
+                :aria-label="t('inventory.clearSearch')"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path
                     fill-rule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -53,23 +54,33 @@
             </button>
           </div>
         </div>
-        <div class="table-container">
+        <div class="table-container" :class="{ 'is-refreshing': refreshing }">
           <table>
             <thead>
               <tr>
-                <th>{{ t('inventory.table.sku') }}</th>
-                <th>{{ t('inventory.table.itemName') }}</th>
-                <th>{{ t('inventory.table.category') }}</th>
-                <th>{{ t('inventory.table.quantityOnHand') }}</th>
-                <th>{{ t('inventory.table.reorderPoint') }}</th>
-                <th>{{ t('inventory.table.unitCost') }}</th>
-                <th>{{ t('inventory.table.totalValue') }}</th>
-                <th>{{ t('inventory.table.location') }}</th>
-                <th>{{ t('inventory.table.status') }}</th>
+                <th scope="col">{{ t('inventory.table.sku') }}</th>
+                <th scope="col">{{ t('inventory.table.itemName') }}</th>
+                <th scope="col">{{ t('inventory.table.category') }}</th>
+                <th scope="col">{{ t('inventory.table.quantityOnHand') }}</th>
+                <th scope="col">{{ t('inventory.table.reorderPoint') }}</th>
+                <th scope="col">{{ t('inventory.table.unitCost') }}</th>
+                <th scope="col">{{ t('inventory.table.totalValue') }}</th>
+                <th scope="col">{{ t('inventory.table.location') }}</th>
+                <th scope="col">{{ t('inventory.table.status') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in filteredItems" :key="item.id" class="clickable-row" @click="showItemDetail(item)">
+              <tr
+                v-for="item in filteredItems"
+                :key="item.id"
+                class="clickable-row"
+                tabindex="0"
+                role="button"
+                :aria-label="t('inventory.viewItemDetail', { name: translateProductName(item.name) })"
+                @click="showItemDetail(item)"
+                @keydown.enter="showItemDetail(item)"
+                @keydown.space.prevent="showItemDetail(item)"
+              >
                 <td>
                   <strong>{{ item.sku }}</strong>
                 </td>
@@ -113,6 +124,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { api } from '../api'
 import { useFilters } from '../composables/useFilters'
 import { useI18n } from '../composables/useI18n'
+import { useTranslations } from '../composables/useTranslations'
 import InventoryDetailModal from '../components/InventoryDetailModal.vue'
 
 export default {
@@ -122,12 +134,16 @@ export default {
   },
   setup() {
     const { t, currentCurrency, translateProductName, translateWarehouse } = useI18n()
+    const { translateCategory } = useTranslations()
 
     const currencySymbol = computed(() => {
       return currentCurrency.value === 'JPY' ? '¥' : '$'
     })
 
     const loading = ref(true)
+    // Separate flag for background refetches (filter changes) so the table
+    // keeps showing the previous rows instead of blanking to a spinner.
+    const refreshing = ref(false)
     const error = ref(null)
     const items = ref([])
     const searchQuery = ref('')
@@ -172,9 +188,13 @@ export default {
       })
     })
 
-    const loadInventory = async () => {
+    const loadInventory = async ({ initial = false } = {}) => {
       try {
-        loading.value = true
+        if (initial) {
+          loading.value = true
+        } else {
+          refreshing.value = true
+        }
         const filters = getCurrentFilters()
         // Inventory doesn't support month/status filters, only warehouse and category
         items.value = await api.getInventory({
@@ -185,6 +205,7 @@ export default {
         error.value = 'Failed to load inventory: ' + err.message
       } finally {
         loading.value = false
+        refreshing.value = false
       }
     }
 
@@ -208,17 +229,6 @@ export default {
       }
     }
 
-    const translateCategory = (category) => {
-      const categoryMap = {
-        'Circuit Boards': t('categories.circuitBoards'),
-        Sensors: t('categories.sensors'),
-        Actuators: t('categories.actuators'),
-        Controllers: t('categories.controllers'),
-        'Power Supplies': t('categories.powerSupplies')
-      }
-      return categoryMap[category] || category
-    }
-
     const showItemDetail = (item) => {
       selectedItem.value = item
       showItemModal.value = true
@@ -234,7 +244,12 @@ export default {
     // Escape a single CSV field: wrap in double quotes when it contains a
     // comma, double-quote or newline, and double up any internal quotes.
     const escapeCsvField = (value) => {
-      const str = String(value ?? '')
+      let str = String(value ?? '')
+      // Neutralise spreadsheet formula injection: a leading =, +, -, @, tab or CR
+      // makes Excel/Sheets evaluate the cell as a formula, so prefix an apostrophe.
+      if (/^[=+\-@\t\r]/.test(str)) {
+        str = "'" + str
+      }
       if (/[",\n]/.test(str)) {
         return '"' + str.replace(/"/g, '""') + '"'
       }
@@ -295,11 +310,12 @@ export default {
       URL.revokeObjectURL(url)
     }
 
-    onMounted(loadInventory)
+    onMounted(() => loadInventory({ initial: true }))
 
     return {
       t,
       loading,
+      refreshing,
       error,
       items,
       searchQuery,
@@ -389,7 +405,13 @@ export default {
   left: 0.75rem;
   width: 18px;
   height: 18px;
-  color: #94a3b8;
+  color: #64748b;
+  pointer-events: none;
+}
+
+/* Dim (but keep visible) the table while a filter-triggered refetch is in flight */
+.table-container.is-refreshing {
+  opacity: 0.6;
   pointer-events: none;
 }
 
@@ -412,7 +434,7 @@ export default {
 }
 
 .search-input::placeholder {
-  color: #94a3b8;
+  color: #475569;
 }
 
 .clear-search {
@@ -425,7 +447,7 @@ export default {
   background: transparent;
   border: none;
   border-radius: 4px;
-  color: #94a3b8;
+  color: #64748b;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -433,6 +455,12 @@ export default {
 .clear-search:hover {
   background: #e2e8f0;
   color: #64748b;
+}
+
+.clear-search:focus-visible,
+.export-csv-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .clear-search svg {
@@ -458,5 +486,10 @@ export default {
 
 .clickable-row:hover {
   background: #eff6ff !important;
+}
+
+.clickable-row:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
 }
 </style>

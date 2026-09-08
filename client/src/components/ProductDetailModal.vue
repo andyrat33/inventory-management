@@ -2,12 +2,20 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="isOpen && product" class="modal-overlay" @click="close">
-        <div class="modal-container" @click.stop>
+        <div
+          ref="dialogRef"
+          class="modal-container"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="product-detail-title"
+          tabindex="-1"
+          @click.stop
+        >
           <div class="modal-header">
-            <h3 class="modal-title">Product Details</h3>
-            <button class="close-button" @click="close">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <h3 id="product-detail-title" class="modal-title">Product Details</h3>
+            <button class="close-button" :aria-label="t('common.close')" @click="close">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
           </div>
@@ -16,8 +24,8 @@
             <div class="product-header">
               <div class="product-icon">
                 <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                  <rect x="8" y="12" width="32" height="28" rx="2" stroke="currentColor" stroke-width="2.5"/>
-                  <path d="M16 8V16M32 8V16M8 20H40" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <rect x="8" y="12" width="32" height="28" rx="2" stroke="currentColor" stroke-width="2.5" />
+                  <path d="M16 8V16M32 8V16M8 20H40" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
                 </svg>
               </div>
               <div class="product-title-section">
@@ -86,10 +94,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from '../composables/useI18n'
+import { useModal } from '../composables/useModal'
 
-const { currentCurrency } = useI18n()
+const { t, currentCurrency } = useI18n()
 
 const currencySymbol = computed(() => {
   return currentCurrency.value === 'JPY' ? '¥' : '$'
@@ -108,9 +117,13 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
+const dialogRef = ref(null)
+
 const close = () => {
   emit('close')
 }
+
+useModal(() => props.isOpen, close, dialogRef)
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
@@ -188,6 +201,11 @@ const getStockBadgeClass = (stockLevel) => {
 .close-button:hover {
   background: #f1f5f9;
   color: #0f172a;
+}
+
+.close-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .modal-body {

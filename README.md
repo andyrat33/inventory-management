@@ -22,6 +22,7 @@ A full-stack demo application for a Claude Code workshop — inventory managemen
 ## Quick Start
 
 **One-command startup:**
+
 ```bash
 ./scripts/start.sh
 # Starts both backend and frontend
@@ -33,6 +34,7 @@ A full-stack demo application for a Claude Code workshop — inventory managemen
 **Manual startup:**
 
 Backend:
+
 ```bash
 cd server
 uv venv && uv sync
@@ -40,6 +42,7 @@ uv run python main.py
 ```
 
 Frontend:
+
 ```bash
 cd client
 npm install
@@ -57,9 +60,26 @@ All endpoints support optional filtering via query params: `warehouse`, `categor
 - `GET /api/dashboard/summary` - Summary statistics
 - `GET /api/spending/*` - Spending data
 
+## Authentication
+
+**There is no real authentication.** This is a deliberate choice for a local demo
+with disposable mock data:
+
+- **Backend** — every endpoint in `server/main.py` is unauthenticated. The server
+  binds `127.0.0.1` by default and applies a generous per-IP rate limit; it is
+  intended for local use only. Do not deploy it as-is on a shared network.
+- **Frontend** — a demo sign-in gate (`/login`) stands in front of the app. It
+  accepts anything and just sets a per-tab flag (`useAuth.js`); "Log out" clears
+  the flag and returns to `/login`. No credentials are checked or sent anywhere.
+
+Adding real auth means: a token/JWT dependency on the FastAPI routes (at minimum
+the non-`GET` routes and `/api/spending/*`), a login endpoint, and wiring the
+frontend flag to real token state.
+
 ## Demo Data
 
 Mock data includes:
+
 - Inventory items (Circuit Boards, Sensors, Actuators, Controllers)
 - Orders spanning 12 months (Delivered, Shipped, Processing, Backordered)
 - Demand forecasts with trends
@@ -82,6 +102,7 @@ npm run build  # Output: client/dist/
 **Windows:** The shell scripts in `scripts/` are macOS/Linux only. Use the manual startup commands instead — run each in a separate terminal:
 
 Backend:
+
 ```bash
 cd server
 uv venv && uv sync
@@ -89,6 +110,7 @@ uv run python main.py
 ```
 
 Frontend:
+
 ```bash
 cd client
 npm install

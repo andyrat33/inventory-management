@@ -2,12 +2,20 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="isOpen && backlogItem" class="modal-overlay" @click="close">
-        <div class="modal-container" @click.stop>
+        <div
+          ref="dialogRef"
+          class="modal-container"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="backlog-detail-title"
+          tabindex="-1"
+          @click.stop
+        >
           <div class="modal-header">
-            <h3 class="modal-title">Inventory Shortage Details</h3>
-            <button class="close-button" @click="close">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <h3 id="backlog-detail-title" class="modal-title">Inventory Shortage Details</h3>
+            <button class="close-button" :aria-label="t('common.close')" @click="close">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
           </div>
@@ -16,17 +24,15 @@
             <div class="shortage-header">
               <div class="shortage-icon">
                 <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                  <path d="M24 8L24 28M24 34L24 36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                  <circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="3"/>
+                  <path d="M24 8L24 28M24 34L24 36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                  <circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="3" />
                 </svg>
               </div>
               <div class="shortage-title-section">
                 <h4 class="item-name">{{ translateProductName(backlogItem.item_name) }}</h4>
                 <div class="item-sku">SKU: {{ backlogItem.item_sku }}</div>
               </div>
-              <span class="priority-badge" :class="backlogItem.priority">
-                {{ backlogItem.priority }} Priority
-              </span>
+              <span class="priority-badge" :class="backlogItem.priority"> {{ backlogItem.priority }} Priority </span>
             </div>
 
             <div class="shortage-summary">
@@ -85,10 +91,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from '../composables/useI18n'
+import { useModal } from '../composables/useModal'
 
-const { translateProductName } = useI18n()
+const { t, translateProductName } = useI18n()
 
 const props = defineProps({
   isOpen: {
@@ -103,14 +110,18 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
-const shortage = computed(() => {
-  if (!props.backlogItem) return 0
-  return props.backlogItem.quantity_needed - props.backlogItem.quantity_available
-})
+const dialogRef = ref(null)
 
 const close = () => {
   emit('close')
 }
+
+useModal(() => props.isOpen, close, dialogRef)
+
+const shortage = computed(() => {
+  if (!props.backlogItem) return 0
+  return props.backlogItem.quantity_needed - props.backlogItem.quantity_available
+})
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
@@ -181,6 +192,11 @@ const formatDate = (dateString) => {
 .close-button:hover {
   background: #f1f5f9;
   color: #0f172a;
+}
+
+.close-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .modal-body {
