@@ -156,3 +156,60 @@ class TestTasksEndpoints:
 
         for field in ("id", "title", "priority", "dueDate", "status"):
             assert field in created
+
+
+class TestTaskValidation:
+    """Test suite for CreateTaskRequest input constraints."""
+
+    def _payload(self, **overrides):
+        payload = {"title": "Valid task", "priority": "high", "dueDate": "2026-01-15"}
+        payload.update(overrides)
+        return payload
+
+    def test_reject_empty_title(self, client):
+        """An empty title fails validation."""
+        response = client.post("/api/tasks", json=self._payload(title=""))
+        assert response.status_code == 422
+
+    def test_reject_overlong_title(self, client):
+        """A title over 200 characters fails validation."""
+        response = client.post("/api/tasks", json=self._payload(title="x" * 201))
+        assert response.status_code == 422
+
+    def test_reject_unknown_priority(self, client):
+        """A priority outside high/medium/low fails validation."""
+        response = client.post("/api/tasks", json=self._payload(priority="urgent"))
+        assert response.status_code == 422
+
+    def test_reject_malformed_due_date(self, client):
+        """A dueDate that is not YYYY-MM-DD fails validation."""
+        response = client.post("/api/tasks", json=self._payload(dueDate="next tuesday"))
+        assert response.status_code == 422
+
+    def test_reject_impossible_due_date(self, client):
+        """A syntactically-shaped but impossible date fails validation."""
+        response = client.post("/api/tasks", json=self._payload(dueDate="2026-13-40"))
+        assert response.status_code == 422
+
+    def test_accepts_each_valid_priority(self, client):
+        """high, medium and low are all accepted."""
+        for priority in ("high", "medium", "low"):
+            response = client.post("/api/tasks", json=self._payload(priority=priority))
+            assert response.status_code == 201
+
+    def test_get_tasks_limit_and_offset(self, client):
+        """limit/offset page through the task list without changing default behaviour."""
+        for i in range(5):
+            client.post("/api/tasks", json=self._payload(title=f"Task {i}"))
+
+        assert len(client.get("/api/tasks").json()) == 5
+        assert len(client.get("/api/tasks?limit=2").json()) == 2
+
+        page1 = client.get("/api/tasks?limit=2&offset=0").json()
+        page2 = client.get("/api/tasks?limit=2&offset=2").json()
+        assert [t["id"] for t in page1] != [t["id"] for t in page2]
+
+    def test_reject_invalid_limit(self, client):
+        """limit below 1 or above 1000 fails validation."""
+        assert client.get("/api/tasks?limit=0").status_code == 422
+        assert client.get("/api/tasks?limit=5000").status_code == 422

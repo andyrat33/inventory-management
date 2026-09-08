@@ -1,9 +1,15 @@
+import math
 import os
-from fastapi import FastAPI, HTTPException, Query
+import time
+from collections import deque
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from typing import List, Optional
 from datetime import datetime, timedelta
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from mock_data import inventory_items, orders, demand_forecasts, backlog_items, spending_summary, monthly_spending, category_spending, recent_transactions, purchase_orders, restocking_orders, tasks
 
 app = FastAPI(title="Factory Inventory Management System")
@@ -16,21 +22,33 @@ QUARTER_MAP = {
     'Q4-2025': ['2025-10', '2025-11', '2025-12']
 }
 
+def _order_year_month(order_date: str) -> str:
+    """Return the 'YYYY-MM' prefix of an ISO date string, or '' if unparseable.
+
+    Guards against the substring bug where e.g. month='2025' or month='0' would
+    match on any date that merely contains those characters.
+    """
+    ym = (order_date or '')[:7]
+    try:
+        datetime.strptime(ym, "%Y-%m")
+    except ValueError:
+        return ''
+    return ym
+
 def filter_by_month(items: list, month: Optional[str]) -> list:
-    """Filter items by month/quarter based on order_date field"""
+    """Filter items by month (YYYY-MM) or quarter (Q1-2025) on the order_date field"""
     if not month or month == 'all':
         return items
 
     if month.startswith('Q'):
-        # Handle quarters
-        if month in QUARTER_MAP:
-            months = QUARTER_MAP[month]
-            return [item for item in items if any(m in item.get('order_date', '') for m in months)]
+        target_months = set(QUARTER_MAP.get(month, []))
     else:
-        # Direct month match
-        return [item for item in items if month in item.get('order_date', '')]
+        target_months = {month}
 
-    return items
+    if not target_months:
+        return items
+
+    return [item for item in items if _order_year_month(item.get('order_date', '')) in target_months]
 
 def apply_filters(items: list, warehouse: Optional[str] = None, category: Optional[str] = None,
                  status: Optional[str] = None) -> list:
@@ -48,6 +66,15 @@ def apply_filters(items: list, warehouse: Optional[str] = None, category: Option
 
     return filtered
 
+def paginate(items: list, limit: Optional[int], offset: int) -> list:
+    """Opt-in pagination: with no limit the full list is returned (unchanged
+    behaviour); pass limit/offset to page through large collections."""
+    if offset:
+        items = items[offset:]
+    if limit is not None:
+        items = items[:limit]
+    return items
+
 # CORS middleware
 # Explicit origin allowlist. Never pair "*" with allow_credentials=True: Starlette
 # then reflects any request Origin back with Access-Control-Allow-Credentials: true.
@@ -64,6 +91,44 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Lightweight per-IP rate limit (fixed window, in-process). Generous enough to be
+# invisible in normal use; caps a script hammering the unauthenticated write
+# endpoints. Tune with RATE_LIMIT_MAX / RATE_LIMIT_WINDOW; disable with
+# RATE_LIMIT_MAX=0.
+RATE_LIMIT_MAX = int(os.getenv("RATE_LIMIT_MAX", "240"))
+RATE_LIMIT_WINDOW = float(os.getenv("RATE_LIMIT_WINDOW", "60"))
+_request_log: dict = {}
+
+@app.middleware("http")
+async def rate_limit(request: Request, call_next):
+    if RATE_LIMIT_MAX > 0:
+        client_ip = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        hits = _request_log.setdefault(client_ip, deque())
+        while hits and now - hits[0] > RATE_LIMIT_WINDOW:
+            hits.popleft()
+        if len(hits) >= RATE_LIMIT_MAX:
+            return JSONResponse(status_code=429, content={"detail": "Too many requests"})
+        hits.append(now)
+    return await call_next(request)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Return the standard 422, but stringify any non-finite float in the error
+    payload (e.g. a rejected `{"budget": Infinity}`) so the response itself can
+    still be JSON-encoded instead of failing with a 500."""
+    def clean(value):
+        if isinstance(value, float) and not math.isfinite(value):
+            return str(value)
+        if isinstance(value, dict):
+            return {k: clean(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [clean(v) for v in value]
+        return value
+
+    errors = [clean(dict(err)) for err in exc.errors()]
+    return JSONResponse(status_code=422, content=jsonable_encoder({"detail": errors}))
 
 # Data models
 class InventoryItem(BaseModel):
@@ -143,9 +208,18 @@ class Task(BaseModel):
     status: str
 
 class CreateTaskRequest(BaseModel):
-    title: str
-    priority: str
+    title: str = Field(min_length=1, max_length=200)
+    priority: str = Field(pattern="^(high|medium|low)$")
     dueDate: str
+
+    @field_validator("dueDate")
+    @classmethod
+    def _valid_date(cls, v: str) -> str:
+        try:
+            datetime.strptime(v, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("dueDate must be a valid date in YYYY-MM-DD format")
+        return v
 
 class RestockingRecommendation(BaseModel):
     item_sku: str
@@ -180,7 +254,7 @@ class RestockingOrder(BaseModel):
     status: str
 
 class CreateRestockingOrderRequest(BaseModel):
-    budget: float
+    budget: float = Field(ge=0, le=1_000_000_000, allow_inf_nan=False)
 
 # Restocking recommendation lead time (days)
 RESTOCKING_LEAD_TIME_DAYS = 14
@@ -277,12 +351,14 @@ def get_orders(
     warehouse: Optional[str] = None,
     category: Optional[str] = None,
     status: Optional[str] = None,
-    month: Optional[str] = None
+    month: Optional[str] = None,
+    limit: Optional[int] = Query(None, ge=1, le=1000),
+    offset: int = Query(0, ge=0)
 ):
-    """Get all orders with optional filtering"""
+    """Get all orders with optional filtering and opt-in limit/offset pagination"""
     filtered_orders = apply_filters(orders, warehouse, category, status)
     filtered_orders = filter_by_month(filtered_orders, month)
-    return filtered_orders
+    return paginate(filtered_orders, limit, offset)
 
 @app.get("/api/orders/{order_id}", response_model=Order)
 def get_order(order_id: str):
@@ -442,9 +518,12 @@ def generate_task_id():
     return str(max(int(t["id"]) for t in tasks) + 1)
 
 @app.get("/api/tasks", response_model=List[Task])
-def get_tasks():
-    """Get all tasks"""
-    return tasks
+def get_tasks(
+    limit: Optional[int] = Query(None, ge=1, le=1000),
+    offset: int = Query(0, ge=0)
+):
+    """Get all tasks with opt-in limit/offset pagination"""
+    return paginate(tasks, limit, offset)
 
 @app.post("/api/tasks", response_model=Task, status_code=201)
 def create_task(task_data: CreateTaskRequest):
@@ -484,9 +563,12 @@ def get_restocking_recommendations(budget: float = Query(..., ge=0)):
     return compute_restocking_recommendations(budget)
 
 @app.get("/api/restocking-orders", response_model=List[RestockingOrder])
-def get_restocking_orders():
-    """Get all submitted restocking orders"""
-    return restocking_orders
+def get_restocking_orders(
+    limit: Optional[int] = Query(None, ge=1, le=1000),
+    offset: int = Query(0, ge=0)
+):
+    """Get all submitted restocking orders with opt-in limit/offset pagination"""
+    return paginate(restocking_orders, limit, offset)
 
 @app.post("/api/restocking-orders", response_model=RestockingOrder, status_code=201)
 def create_restocking_order(request: CreateRestockingOrderRequest):

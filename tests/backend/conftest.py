@@ -1,11 +1,16 @@
 """
 Pytest configuration and fixtures for backend API tests.
 """
+import os
 import sys
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+
+# Disable the per-IP rate limiter for the test session (all requests share one
+# client host, so the limiter would otherwise trip partway through the suite).
+os.environ.setdefault("RATE_LIMIT_MAX", "0")
 
 # Add server directory to path
 server_path = Path(__file__).parent.parent.parent / "server"
