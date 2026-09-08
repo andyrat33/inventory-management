@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs on the same branch / PR
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend tests (pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+          enable-cache: true
+          cache-dependency-glob: server/pyproject.toml
+
+      - name: Install dependencies
+        run: uv sync
+
+      # `python -m pytest` rather than `uv run pytest` so the run doesn't depend
+      # on the console-script shebang. pytest.ini lives in tests/ (testpaths =
+      # backend); conftest.py puts server/ on sys.path.
+      - name: Run tests
+        run: uv run python -m pytest ../tests/backend
+
+  frontend:
+    name: Frontend build + format
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: client/package.json
+
+      # package-lock.json is intentionally gitignored (public-registry guard),
+      # so `npm install`, not `npm ci`.
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Build
+        run: npm run build
