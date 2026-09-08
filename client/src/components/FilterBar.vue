@@ -55,14 +55,13 @@
         </div>
       </div>
 
-      <button
-        class="reset-filters-btn"
-        @click="resetFilters"
-        :disabled="!hasActiveFilters"
-        title="Reset all filters"
-      >
+      <button class="reset-filters-btn" @click="resetFilters" :disabled="!hasActiveFilters" title="Reset all filters">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+          <path
+            fill-rule="evenodd"
+            d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+            clip-rule="evenodd"
+          />
         </svg>
       </button>
     </div>
@@ -76,14 +75,8 @@ import { useI18n } from '../composables/useI18n'
 export default {
   name: 'FilterBar',
   setup() {
-    const {
-      selectedPeriod,
-      selectedLocation,
-      selectedCategory,
-      selectedStatus,
-      hasActiveFilters,
-      resetFilters
-    } = useFilters()
+    const { selectedPeriod, selectedLocation, selectedCategory, selectedStatus, hasActiveFilters, resetFilters } =
+      useFilters()
 
     const { t } = useI18n()
 
@@ -122,7 +115,8 @@ export default {
 .filters-grid {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
   flex: 1;
 }
 
@@ -130,6 +124,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex: 1 1 200px;
 }
 
 .filter-group label {
@@ -149,7 +144,8 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
   font-weight: 500;
-  min-width: 140px;
+  min-width: 0;
+  flex: 1 1 140px;
 }
 
 .filter-select:hover {
@@ -190,5 +186,20 @@ export default {
 .reset-filters-btn svg {
   width: 18px;
   height: 18px;
+}
+
+@media (max-width: 900px) {
+  .filters-container {
+    padding: 0 1rem;
+    gap: 0.75rem;
+  }
+
+  .filter-group {
+    flex-basis: 100%;
+  }
+
+  .filter-group label {
+    flex-shrink: 0;
+  }
 }
 </style>

@@ -13,6 +13,15 @@ export default {
     expandSidebar: 'Expand sidebar'
   },
 
+  // Login
+  login: {
+    title: 'Sign in',
+    demoNote: 'Demo environment — sign in with anything.',
+    email: 'Email',
+    password: 'Password',
+    signIn: 'Sign in'
+  },
+
   // Dashboard
   dashboard: {
     title: 'Overview',
@@ -145,6 +154,40 @@ export default {
       status: 'Status'
     },
     restockingLoadError: "Couldn't load submitted restocking orders."
+  },
+
+  // Reports
+  reports: {
+    title: 'Performance Reports',
+    description: 'View quarterly performance metrics and monthly trends',
+    loading: 'Loading reports...',
+    loadError: 'Failed to load reports: {message}',
+    notAvailable: 'N/A',
+    quarterly: {
+      title: 'Quarterly Performance',
+      quarter: 'Quarter',
+      totalOrders: 'Total Orders',
+      totalRevenue: 'Total Revenue',
+      avgOrderValue: 'Avg Order Value',
+      fulfillmentRate: 'Fulfillment Rate'
+    },
+    monthlyTrend: {
+      title: 'Monthly Revenue Trend'
+    },
+    momAnalysis: {
+      title: 'Month-over-Month Analysis',
+      month: 'Month',
+      orders: 'Orders',
+      revenue: 'Revenue',
+      change: 'Change',
+      growthRate: 'Growth Rate'
+    },
+    summary: {
+      totalRevenueYtd: 'Total Revenue (YTD)',
+      avgMonthlyRevenue: 'Avg Monthly Revenue',
+      totalOrdersYtd: 'Total Orders (YTD)',
+      bestQuarter: 'Best Performing Quarter'
+    }
   },
 
   // Finance/Spending

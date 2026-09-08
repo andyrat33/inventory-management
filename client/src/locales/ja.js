@@ -13,6 +13,15 @@ export default {
     expandSidebar: 'サイドバーを展開'
   },
 
+  // Login
+  login: {
+    title: 'サインイン',
+    demoNote: 'デモ環境 — 任意の値でサインインできます。',
+    email: 'メールアドレス',
+    password: 'パスワード',
+    signIn: 'サインイン'
+  },
+
   // Dashboard
   dashboard: {
     title: '概要',
@@ -145,6 +154,40 @@ export default {
       status: 'ステータス'
     },
     restockingLoadError: '提出済みの再入荷注文を読み込めませんでした。'
+  },
+
+  // Reports
+  reports: {
+    title: 'パフォーマンスレポート',
+    description: '四半期の業績指標と月次トレンドを表示します',
+    loading: 'レポートを読み込んでいます...',
+    loadError: 'レポートの読み込みに失敗しました: {message}',
+    notAvailable: '該当なし',
+    quarterly: {
+      title: '四半期業績',
+      quarter: '四半期',
+      totalOrders: '総注文数',
+      totalRevenue: '総収益',
+      avgOrderValue: '平均注文額',
+      fulfillmentRate: '出荷完了率'
+    },
+    monthlyTrend: {
+      title: '月次収益トレンド'
+    },
+    momAnalysis: {
+      title: '前月比分析',
+      month: '月',
+      orders: '注文数',
+      revenue: '収益',
+      change: '増減',
+      growthRate: '成長率'
+    },
+    summary: {
+      totalRevenueYtd: '総収益（年初来）',
+      avgMonthlyRevenue: '月平均収益',
+      totalOrdersYtd: '総注文数（年初来）',
+      bestQuarter: '最高業績の四半期'
+    }
   },
 
   // Finance/Spending
