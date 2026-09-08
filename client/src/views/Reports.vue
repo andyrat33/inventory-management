@@ -17,11 +17,11 @@
           <table class="reports-table">
             <thead>
               <tr>
-                <th>{{ t('reports.quarterly.quarter') }}</th>
-                <th>{{ t('reports.quarterly.totalOrders') }}</th>
-                <th>{{ t('reports.quarterly.totalRevenue') }}</th>
-                <th>{{ t('reports.quarterly.avgOrderValue') }}</th>
-                <th>{{ t('reports.quarterly.fulfillmentRate') }}</th>
+                <th scope="col">{{ t('reports.quarterly.quarter') }}</th>
+                <th scope="col">{{ t('reports.quarterly.totalOrders') }}</th>
+                <th scope="col">{{ t('reports.quarterly.totalRevenue') }}</th>
+                <th scope="col">{{ t('reports.quarterly.avgOrderValue') }}</th>
+                <th scope="col">{{ t('reports.quarterly.fulfillmentRate') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -67,11 +67,11 @@
           <table class="reports-table">
             <thead>
               <tr>
-                <th>{{ t('reports.momAnalysis.month') }}</th>
-                <th>{{ t('reports.momAnalysis.orders') }}</th>
-                <th>{{ t('reports.momAnalysis.revenue') }}</th>
-                <th>{{ t('reports.momAnalysis.change') }}</th>
-                <th>{{ t('reports.momAnalysis.growthRate') }}</th>
+                <th scope="col">{{ t('reports.momAnalysis.month') }}</th>
+                <th scope="col">{{ t('reports.momAnalysis.orders') }}</th>
+                <th scope="col">{{ t('reports.momAnalysis.revenue') }}</th>
+                <th scope="col">{{ t('reports.momAnalysis.change') }}</th>
+                <th scope="col">{{ t('reports.momAnalysis.growthRate') }}</th>
               </tr>
             </thead>
             <tbody>

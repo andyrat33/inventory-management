@@ -6,7 +6,7 @@
 
     <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else>
+    <div v-else :class="{ 'is-refreshing': refreshing }">
       <!-- Key Performance Indicators -->
       <div class="kpi-section">
         <h3 class="section-title">{{ t('dashboard.kpi.title') }}</h3>
@@ -253,14 +253,14 @@
             <table>
               <thead>
                 <tr>
-                  <th>{{ t('dashboard.inventoryShortages.orderId') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.sku') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.itemName') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.quantityNeeded') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.quantityAvailable') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.shortage') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.daysDelayed') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.priority') }}</th>
+                  <th scope="col">{{ t('dashboard.inventoryShortages.orderId') }}</th>
+                  <th scope="col">{{ t('dashboard.inventoryShortages.sku') }}</th>
+                  <th scope="col">{{ t('dashboard.inventoryShortages.itemName') }}</th>
+                  <th scope="col">{{ t('dashboard.inventoryShortages.quantityNeeded') }}</th>
+                  <th scope="col">{{ t('dashboard.inventoryShortages.quantityAvailable') }}</th>
+                  <th scope="col">{{ t('dashboard.inventoryShortages.shortage') }}</th>
+                  <th scope="col">{{ t('dashboard.inventoryShortages.daysDelayed') }}</th>
+                  <th scope="col">{{ t('dashboard.inventoryShortages.priority') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -321,13 +321,13 @@
             <table>
               <thead>
                 <tr>
-                  <th>{{ t('dashboard.topProducts.product') }}</th>
-                  <th>{{ t('dashboard.topProducts.sku') }}</th>
-                  <th>{{ t('dashboard.topProducts.category') }}</th>
-                  <th>{{ t('dashboard.topProducts.unitsOrdered') }}</th>
-                  <th>{{ t('dashboard.topProducts.revenue') }}</th>
-                  <th>{{ t('dashboard.topProducts.firstOrder') }}</th>
-                  <th>{{ t('dashboard.topProducts.stockStatus') }}</th>
+                  <th scope="col">{{ t('dashboard.topProducts.product') }}</th>
+                  <th scope="col">{{ t('dashboard.topProducts.sku') }}</th>
+                  <th scope="col">{{ t('dashboard.topProducts.category') }}</th>
+                  <th scope="col">{{ t('dashboard.topProducts.unitsOrdered') }}</th>
+                  <th scope="col">{{ t('dashboard.topProducts.revenue') }}</th>
+                  <th scope="col">{{ t('dashboard.topProducts.firstOrder') }}</th>
+                  <th scope="col">{{ t('dashboard.topProducts.stockStatus') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -395,6 +395,8 @@ export default {
     const { t, currentCurrency, currentLocale, translateProductName, translateWarehouse } = useI18n()
     const { translateCategory, translateStockLevel, translatePriority } = useTranslations()
     const loading = ref(true)
+    // Background refetch flag (filter changes) so existing cards/tables stay visible
+    const refreshing = ref(false)
     const error = ref(null)
     const summary = ref({})
     const allOrders = ref([])
@@ -643,9 +645,13 @@ export default {
       return allBacklogItems.value.filter((b) => validSkus.has(b.item_sku))
     })
 
-    const loadData = async () => {
+    const loadData = async ({ initial = false } = {}) => {
       try {
-        loading.value = true
+        if (initial) {
+          loading.value = true
+        } else {
+          refreshing.value = true
+        }
         const filters = getCurrentFilters()
 
         const [summaryData, ordersData, inventoryData, backlogData] = await Promise.all([
@@ -663,6 +669,7 @@ export default {
         error.value = 'Failed to load dashboard data: ' + err.message
       } finally {
         loading.value = false
+        refreshing.value = false
       }
     }
 
@@ -713,11 +720,12 @@ export default {
       loadData()
     })
 
-    onMounted(loadData)
+    onMounted(() => loadData({ initial: true }))
 
     return {
       t,
       loading,
+      refreshing,
       error,
       summary,
       ordersData,
@@ -1040,8 +1048,14 @@ export default {
   justify-content: space-between;
   padding-right: 1rem;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #475569;
   border-right: 1px solid #e2e8f0;
+}
+
+/* Keep dashboard cards visible during a filter-triggered refetch */
+.is-refreshing {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .line-chart-area {
@@ -1107,7 +1121,7 @@ export default {
 .no-data {
   padding: 2rem;
   text-align: center;
-  color: #94a3b8;
+  color: #475569;
   font-size: 0.875rem;
 }
 
@@ -1233,7 +1247,7 @@ export default {
 
 .task-item.completed .task-text {
   text-decoration: line-through;
-  color: #94a3b8;
+  color: #475569;
 }
 
 .task-checkbox {

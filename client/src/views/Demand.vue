@@ -7,7 +7,7 @@
 
     <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else>
+    <div v-else :class="{ 'is-refreshing': refreshing }">
       <div class="demand-trend-cards">
         <div class="trend-card increasing-card">
           <div class="trend-header">
@@ -79,13 +79,13 @@
           <table>
             <thead>
               <tr>
-                <th>{{ t('demand.table.sku') }}</th>
-                <th>{{ t('demand.table.itemName') }}</th>
-                <th>{{ t('demand.table.currentDemand') }}</th>
-                <th>{{ t('demand.table.forecastedDemand') }}</th>
-                <th>{{ t('demand.table.change') }}</th>
-                <th>{{ t('demand.table.trend') }}</th>
-                <th>{{ t('demand.table.period') }}</th>
+                <th scope="col">{{ t('demand.table.sku') }}</th>
+                <th scope="col">{{ t('demand.table.itemName') }}</th>
+                <th scope="col">{{ t('demand.table.currentDemand') }}</th>
+                <th scope="col">{{ t('demand.table.forecastedDemand') }}</th>
+                <th scope="col">{{ t('demand.table.change') }}</th>
+                <th scope="col">{{ t('demand.table.trend') }}</th>
+                <th scope="col">{{ t('demand.table.period') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -127,6 +127,8 @@ export default {
   setup() {
     const { t, currentLocale } = useI18n()
     const loading = ref(true)
+    // Background refetch flag (filter changes) so existing forecasts stay visible
+    const refreshing = ref(false)
     const error = ref(null)
     const allForecasts = ref([])
     const inventoryItems = ref([])
@@ -145,9 +147,13 @@ export default {
       return allForecasts.value.filter((f) => validSkus.has(f.item_sku))
     })
 
-    const loadForecasts = async () => {
+    const loadForecasts = async ({ initial = false } = {}) => {
       try {
-        loading.value = true
+        if (initial) {
+          loading.value = true
+        } else {
+          refreshing.value = true
+        }
         const filters = getCurrentFilters()
 
         const [forecastsData, inventoryData] = await Promise.all([
@@ -164,6 +170,7 @@ export default {
         error.value = 'Failed to load demand forecasts: ' + err.message
       } finally {
         loading.value = false
+        refreshing.value = false
       }
     }
 
@@ -223,11 +230,12 @@ export default {
       return period
     }
 
-    onMounted(loadForecasts)
+    onMounted(() => loadForecasts({ initial: true }))
 
     return {
       t,
       loading,
+      refreshing,
       error,
       forecasts,
       forecastsByTrend,
@@ -240,6 +248,12 @@ export default {
 </script>
 
 <style scoped>
+/* Keep forecasts visible (just dimmed) during a filter-triggered refetch */
+.is-refreshing {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 .demand-trend-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));

@@ -397,6 +397,7 @@ export default {
     dueDate: '期限',
     addTask: 'タスクを追加',
     deleteTask: 'タスクを削除',
+    confirmDelete: '削除しますか？',
     noTasks: 'タスクがありません。上記からタスクを追加してください！',
     errorLoad: 'タスクを読み込めませんでした。このウィンドウを開き直してください。',
     errorAdd: 'タスクを追加できませんでした。もう一度お試しください。',

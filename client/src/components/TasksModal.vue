@@ -90,14 +90,26 @@
                     />
                     <span class="task-title" @click="$emit('toggle-task', task.id)">{{ task.title }}</span>
                   </div>
-                  <button
-                    @click="$emit('delete-task', task.id)"
-                    class="task-delete-btn"
-                    :title="t('tasks.deleteTask')"
-                    :aria-label="t('tasks.deleteTask')"
-                  >
-                    ×
-                  </button>
+                  <div class="task-delete-wrap">
+                    <template v-if="confirmingId === task.id">
+                      <button type="button" class="task-confirm-delete-btn" @click="confirmDelete(task.id)">
+                        {{ t('tasks.confirmDelete') }}
+                      </button>
+                      <button type="button" class="task-cancel-delete-btn" @click="confirmingId = null">
+                        {{ t('common.cancel') }}
+                      </button>
+                    </template>
+                    <button
+                      v-else
+                      type="button"
+                      @click="confirmingId = task.id"
+                      class="task-delete-btn"
+                      :title="t('tasks.deleteTask')"
+                      :aria-label="t('tasks.deleteTask')"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
 
                 <div class="task-footer">
@@ -170,7 +182,16 @@ export default {
 
     const dialogRef = ref(null)
 
+    // Which task (if any) is showing its inline "Delete? / Cancel" confirm
+    const confirmingId = ref(null)
+
+    const confirmDelete = (id) => {
+      emit('delete-task', id)
+      confirmingId.value = null
+    }
+
     const close = () => {
+      confirmingId.value = null
       emit('close')
     }
 
@@ -259,6 +280,8 @@ export default {
     return {
       t,
       dialogRef,
+      confirmingId,
+      confirmDelete,
       newTask,
       sortedTasks,
       close,
@@ -552,7 +575,7 @@ label {
 
 .task-item.completed .task-title {
   text-decoration: line-through;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .task-delete-btn {
@@ -576,6 +599,49 @@ label {
 .task-delete-btn:hover {
   background: #dc2626;
   transform: scale(1.1);
+}
+
+.task-delete-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.task-confirm-delete-btn,
+.task-cancel-delete-btn {
+  padding: 0.25rem 0.625rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.task-confirm-delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.task-confirm-delete-btn:hover {
+  background: #dc2626;
+}
+
+.task-cancel-delete-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.task-cancel-delete-btn:hover {
+  background: #e2e8f0;
+}
+
+.task-confirm-delete-btn:focus-visible,
+.task-cancel-delete-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .task-footer {
@@ -617,7 +683,7 @@ label {
 }
 
 .task-due-date svg {
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .status-badge {

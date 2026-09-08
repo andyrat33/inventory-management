@@ -7,7 +7,7 @@
 
     <div v-if="loading" class="loading">Loading backlog...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else>
+    <div v-else :class="{ 'is-refreshing': refreshing }">
       <div class="stats-grid">
         <div class="stat-card danger">
           <div class="stat-label">High Priority</div>
@@ -31,8 +31,8 @@
         <div class="card-header">
           <h3 class="card-title">Backlog Items</h3>
         </div>
-        <div v-if="backlogItems.length === 0" style="padding: 3rem; text-align: center;">
-          <p style="font-size: 1.125rem; color: #10b981; font-weight: 600;">
+        <div v-if="backlogItems.length === 0" style="padding: 3rem; text-align: center">
+          <p style="font-size: 1.125rem; color: #10b981; font-weight: 600">
             ✓ No backlog items - all orders can be fulfilled!
           </p>
         </div>
@@ -40,27 +40,29 @@
           <table>
             <thead>
               <tr>
-                <th>Order ID</th>
-                <th>SKU</th>
-                <th>Item Name</th>
-                <th>Quantity Needed</th>
-                <th>Quantity Available</th>
-                <th>Shortage</th>
-                <th>Days Delayed</th>
-                <th>Priority</th>
+                <th scope="col">Order ID</th>
+                <th scope="col">SKU</th>
+                <th scope="col">Item Name</th>
+                <th scope="col">Quantity Needed</th>
+                <th scope="col">Quantity Available</th>
+                <th scope="col">Shortage</th>
+                <th scope="col">Days Delayed</th>
+                <th scope="col">Priority</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="item in backlogItems" :key="item.id">
-                <td><strong>{{ item.order_id }}</strong></td>
-                <td><strong>{{ item.item_sku }}</strong></td>
+                <td>
+                  <strong>{{ item.order_id }}</strong>
+                </td>
+                <td>
+                  <strong>{{ item.item_sku }}</strong>
+                </td>
                 <td>{{ item.item_name }}</td>
                 <td>{{ item.quantity_needed }}</td>
                 <td>{{ item.quantity_available }}</td>
                 <td>
-                  <span class="badge danger">
-                    {{ item.quantity_needed - item.quantity_available }} units short
-                  </span>
+                  <span class="badge danger"> {{ item.quantity_needed - item.quantity_available }} units short </span>
                 </td>
                 <td>
                   <span :style="{ color: item.days_delayed > 7 ? '#ef4444' : '#f59e0b' }">
@@ -90,6 +92,8 @@ export default {
   name: 'Backlog',
   setup() {
     const loading = ref(true)
+    // Background refetch flag (filter changes) so the existing table stays visible
+    const refreshing = ref(false)
     const error = ref(null)
     const allBacklogItems = ref([])
     const inventoryItems = ref([])
@@ -104,13 +108,17 @@ export default {
       }
 
       // Get SKUs of items that match the filters
-      const validSkus = new Set(inventoryItems.value.map(item => item.sku))
-      return allBacklogItems.value.filter(b => validSkus.has(b.item_sku))
+      const validSkus = new Set(inventoryItems.value.map((item) => item.sku))
+      return allBacklogItems.value.filter((b) => validSkus.has(b.item_sku))
     })
 
-    const loadBacklog = async () => {
+    const loadBacklog = async ({ initial = false } = {}) => {
       try {
-        loading.value = true
+        if (initial) {
+          loading.value = true
+        } else {
+          refreshing.value = true
+        }
         const filters = getCurrentFilters()
 
         const [backlogData, inventoryData] = await Promise.all([
@@ -127,11 +135,12 @@ export default {
         error.value = 'Failed to load backlog: ' + err.message
       } finally {
         loading.value = false
+        refreshing.value = false
       }
     }
 
     const getBacklogByPriority = (priority) => {
-      return backlogItems.value.filter(item => item.priority === priority)
+      return backlogItems.value.filter((item) => item.priority === priority)
     }
 
     // Watch for filter changes and reload data
@@ -139,10 +148,11 @@ export default {
       loadBacklog()
     })
 
-    onMounted(loadBacklog)
+    onMounted(() => loadBacklog({ initial: true }))
 
     return {
       loading,
+      refreshing,
       error,
       backlogItems,
       getBacklogByPriority
@@ -150,3 +160,11 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* Keep the backlog table visible (just dimmed) during a filter-triggered refetch */
+.is-refreshing {
+  opacity: 0.6;
+  pointer-events: none;
+}
+</style>

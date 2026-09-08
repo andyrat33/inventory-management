@@ -7,7 +7,7 @@
 
     <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else>
+    <div v-else :class="{ 'is-refreshing': refreshing }">
       <div class="stats-grid">
         <div class="stat-card success">
           <div class="stat-label">{{ t('status.delivered') }}</div>
@@ -35,13 +35,13 @@
           <table class="orders-table">
             <thead>
               <tr>
-                <th class="col-order-number">{{ t('orders.table.orderNumber') }}</th>
-                <th class="col-customer">{{ t('orders.table.customer') }}</th>
-                <th class="col-items">{{ t('orders.table.items') }}</th>
-                <th class="col-status">{{ t('orders.table.status') }}</th>
-                <th class="col-date">{{ t('orders.table.orderDate') }}</th>
-                <th class="col-date">{{ t('orders.table.expectedDelivery') }}</th>
-                <th class="col-value">{{ t('orders.table.totalValue') }}</th>
+                <th scope="col" class="col-order-number">{{ t('orders.table.orderNumber') }}</th>
+                <th scope="col" class="col-customer">{{ t('orders.table.customer') }}</th>
+                <th scope="col" class="col-items">{{ t('orders.table.items') }}</th>
+                <th scope="col" class="col-status">{{ t('orders.table.status') }}</th>
+                <th scope="col" class="col-date">{{ t('orders.table.orderDate') }}</th>
+                <th scope="col" class="col-date">{{ t('orders.table.expectedDelivery') }}</th>
+                <th scope="col" class="col-value">{{ t('orders.table.totalValue') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -99,13 +99,13 @@
           <table class="restocking-orders-table">
             <thead>
               <tr>
-                <th class="col-order-number">{{ t('orders.submittedOrders.orderNumber') }}</th>
-                <th class="col-value">{{ t('orders.submittedOrders.budget') }}</th>
-                <th class="col-value">{{ t('orders.submittedOrders.totalCost') }}</th>
-                <th class="col-lead-time">{{ t('orders.submittedOrders.leadTime') }}</th>
-                <th class="col-date">{{ t('orders.submittedOrders.orderDate') }}</th>
-                <th class="col-date">{{ t('orders.submittedOrders.expectedDelivery') }}</th>
-                <th class="col-status">{{ t('orders.submittedOrders.status') }}</th>
+                <th scope="col" class="col-order-number">{{ t('orders.submittedOrders.orderNumber') }}</th>
+                <th scope="col" class="col-value">{{ t('orders.submittedOrders.budget') }}</th>
+                <th scope="col" class="col-value">{{ t('orders.submittedOrders.totalCost') }}</th>
+                <th scope="col" class="col-lead-time">{{ t('orders.submittedOrders.leadTime') }}</th>
+                <th scope="col" class="col-date">{{ t('orders.submittedOrders.orderDate') }}</th>
+                <th scope="col" class="col-date">{{ t('orders.submittedOrders.expectedDelivery') }}</th>
+                <th scope="col" class="col-status">{{ t('orders.submittedOrders.status') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -154,6 +154,8 @@ export default {
       return currentCurrency.value === 'JPY' ? '¥' : '$'
     })
     const loading = ref(true)
+    // Background refetch flag (filter changes) so the existing order table stays visible
+    const refreshing = ref(false)
     const error = ref(null)
     const orders = ref([])
     const restockingOrders = ref([])
@@ -162,9 +164,13 @@ export default {
     // Use shared filters
     const { selectedPeriod, selectedLocation, selectedCategory, selectedStatus, getCurrentFilters } = useFilters()
 
-    const loadOrders = async () => {
+    const loadOrders = async ({ initial = false } = {}) => {
       try {
-        loading.value = true
+        if (initial) {
+          loading.value = true
+        } else {
+          refreshing.value = true
+        }
         const filters = getCurrentFilters()
         const fetchedOrders = await api.getOrders(filters)
 
@@ -178,6 +184,7 @@ export default {
         error.value = 'Failed to load orders: ' + err.message
       } finally {
         loading.value = false
+        refreshing.value = false
       }
     }
 
@@ -230,13 +237,14 @@ export default {
     }
 
     onMounted(() => {
-      loadOrders()
+      loadOrders({ initial: true })
       loadRestockingOrders()
     })
 
     return {
       t,
       loading,
+      refreshing,
       error,
       orders,
       restockingOrders,
@@ -253,6 +261,12 @@ export default {
 </script>
 
 <style scoped>
+/* Keep the order tables visible (just dimmed) during a filter-triggered refetch */
+.is-refreshing {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 /* Fixed table layout to prevent column shifting */
 .orders-table {
   table-layout: fixed;

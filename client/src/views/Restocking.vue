@@ -18,8 +18,11 @@
           v-model.number="budget"
           @change="loadRecommendations"
           class="budget-slider"
+          :aria-label="t('restocking.budgetLabel')"
+          :aria-valuetext="`${currencySymbol}${budget.toLocaleString()}`"
+          aria-describedby="restocking-budget-value"
         />
-        <span class="budget-value">{{ currencySymbol }}{{ budget.toLocaleString() }}</span>
+        <span id="restocking-budget-value" class="budget-value">{{ currencySymbol }}{{ budget.toLocaleString() }}</span>
       </div>
     </div>
 
@@ -63,16 +66,16 @@
           <table>
             <thead>
               <tr>
-                <th>{{ t('restocking.table.sku') }}</th>
-                <th>{{ t('restocking.table.itemName') }}</th>
-                <th>{{ t('restocking.table.category') }}</th>
-                <th>{{ t('restocking.table.warehouse') }}</th>
-                <th>{{ t('restocking.table.trend') }}</th>
-                <th>{{ t('restocking.table.quantityOnHand') }}</th>
-                <th>{{ t('restocking.table.forecastedDemand') }}</th>
-                <th>{{ t('restocking.table.unitCost') }}</th>
-                <th>{{ t('restocking.table.recommendedQuantity') }}</th>
-                <th>{{ t('restocking.table.recommendedCost') }}</th>
+                <th scope="col">{{ t('restocking.table.sku') }}</th>
+                <th scope="col">{{ t('restocking.table.itemName') }}</th>
+                <th scope="col">{{ t('restocking.table.category') }}</th>
+                <th scope="col">{{ t('restocking.table.warehouse') }}</th>
+                <th scope="col">{{ t('restocking.table.trend') }}</th>
+                <th scope="col">{{ t('restocking.table.quantityOnHand') }}</th>
+                <th scope="col">{{ t('restocking.table.forecastedDemand') }}</th>
+                <th scope="col">{{ t('restocking.table.unitCost') }}</th>
+                <th scope="col">{{ t('restocking.table.recommendedQuantity') }}</th>
+                <th scope="col">{{ t('restocking.table.recommendedCost') }}</th>
               </tr>
             </thead>
             <tbody>

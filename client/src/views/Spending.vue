@@ -172,11 +172,11 @@
             <table class="transactions-table">
               <thead>
                 <tr>
-                  <th>{{ t('finance.transactions.id') }}</th>
-                  <th>{{ t('finance.transactions.description') }}</th>
-                  <th>{{ t('finance.transactions.vendor') }}</th>
-                  <th>{{ t('finance.transactions.date') }}</th>
-                  <th class="text-right">{{ t('finance.transactions.amount') }}</th>
+                  <th scope="col">{{ t('finance.transactions.id') }}</th>
+                  <th scope="col">{{ t('finance.transactions.description') }}</th>
+                  <th scope="col">{{ t('finance.transactions.vendor') }}</th>
+                  <th scope="col">{{ t('finance.transactions.date') }}</th>
+                  <th class="text-right" scope="col">{{ t('finance.transactions.amount') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -665,7 +665,7 @@ export default {
   justify-content: space-between;
   padding-right: 1rem;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #475569;
   border-right: 1px solid #e2e8f0;
 }
 
