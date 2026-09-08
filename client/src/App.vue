@@ -209,6 +209,7 @@
         </nav>
 
         <div class="sidebar-footer">
+          <AlertsBell :collapsed="isSidebarCollapsed" />
           <LanguageSwitcher :collapsed="isSidebarCollapsed" />
           <ProfileMenu
             :collapsed="isSidebarCollapsed"
@@ -250,6 +251,7 @@ import ProfileMenu from './components/ProfileMenu.vue'
 import ProfileDetailsModal from './components/ProfileDetailsModal.vue'
 import TasksModal from './components/TasksModal.vue'
 import LanguageSwitcher from './components/LanguageSwitcher.vue'
+import AlertsBell from './components/AlertsBell.vue'
 
 export default {
   name: 'App',
@@ -258,7 +260,8 @@ export default {
     ProfileMenu,
     ProfileDetailsModal,
     TasksModal,
-    LanguageSwitcher
+    LanguageSwitcher,
+    AlertsBell
   },
   setup() {
     const { currentUser } = useAuth()
