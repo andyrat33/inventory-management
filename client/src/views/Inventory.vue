@@ -124,6 +124,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { api } from '../api'
 import { useFilters } from '../composables/useFilters'
 import { useI18n } from '../composables/useI18n'
+import { useTranslations } from '../composables/useTranslations'
 import InventoryDetailModal from '../components/InventoryDetailModal.vue'
 
 export default {
@@ -133,6 +134,7 @@ export default {
   },
   setup() {
     const { t, currentCurrency, translateProductName, translateWarehouse } = useI18n()
+    const { translateCategory } = useTranslations()
 
     const currencySymbol = computed(() => {
       return currentCurrency.value === 'JPY' ? '¥' : '$'
@@ -217,17 +219,6 @@ export default {
       } else {
         return 'success'
       }
-    }
-
-    const translateCategory = (category) => {
-      const categoryMap = {
-        'Circuit Boards': t('categories.circuitBoards'),
-        Sensors: t('categories.sensors'),
-        Actuators: t('categories.actuators'),
-        Controllers: t('categories.controllers'),
-        'Power Supplies': t('categories.powerSupplies')
-      }
-      return categoryMap[category] || category
     }
 
     const showItemDetail = (item) => {

@@ -193,6 +193,7 @@ export default {
 
     const formatDueDate = (dateString) => {
       const date = new Date(dateString)
+      if (isNaN(date.getTime())) return '—'
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       const dueDate = new Date(date)
@@ -220,9 +221,10 @@ export default {
     const getStatusClass = (dueDate, status) => {
       if (status === 'completed') return 'completed'
 
+      const due = new Date(dueDate)
+      if (isNaN(due.getTime())) return ''
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      const due = new Date(dueDate)
       due.setHours(0, 0, 0, 0)
 
       const diffTime = due - today
@@ -239,6 +241,7 @@ export default {
       if (status === 'completed') return isJapanese ? '完了' : 'Completed'
 
       const statusClass = getStatusClass(dueDate, status)
+      if (!statusClass) return '—'
       if (statusClass === 'overdue') return isJapanese ? '期限超過' : 'Overdue'
       if (statusClass === 'urgent') return isJapanese ? 'もうすぐ期限' : 'Due Soon'
       return isJapanese ? '予定' : 'Upcoming'

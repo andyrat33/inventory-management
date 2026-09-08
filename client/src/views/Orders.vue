@@ -11,19 +11,19 @@
       <div class="stats-grid">
         <div class="stat-card success">
           <div class="stat-label">{{ t('status.delivered') }}</div>
-          <div class="stat-value">{{ getOrdersByStatus('Delivered').length }}</div>
+          <div class="stat-value">{{ orderStatusCounts.delivered }}</div>
         </div>
         <div class="stat-card info">
           <div class="stat-label">{{ t('status.shipped') }}</div>
-          <div class="stat-value">{{ getOrdersByStatus('Shipped').length }}</div>
+          <div class="stat-value">{{ orderStatusCounts.shipped }}</div>
         </div>
         <div class="stat-card warning">
           <div class="stat-label">{{ t('status.processing') }}</div>
-          <div class="stat-value">{{ getOrdersByStatus('Processing').length }}</div>
+          <div class="stat-value">{{ orderStatusCounts.processing }}</div>
         </div>
         <div class="stat-card danger">
           <div class="stat-label">{{ t('status.backordered') }}</div>
-          <div class="stat-value">{{ getOrdersByStatus('Backordered').length }}</div>
+          <div class="stat-value">{{ orderStatusCounts.backordered }}</div>
         </div>
       </div>
 
@@ -148,7 +148,7 @@ import { useI18n } from '../composables/useI18n'
 export default {
   name: 'Orders',
   setup() {
-    const { t, currentCurrency, translateProductName, translateCustomerName } = useI18n()
+    const { t, currentCurrency, currentLocale, translateProductName, translateCustomerName } = useI18n()
 
     const currencySymbol = computed(() => {
       return currentCurrency.value === 'JPY' ? '¥' : '$'
@@ -197,9 +197,15 @@ export default {
       }
     }
 
-    const getOrdersByStatus = (status) => {
-      return orders.value.filter((order) => order.status === status)
-    }
+    // Single-pass status tally for the summary cards (was 4x filter over all orders)
+    const orderStatusCounts = computed(() => {
+      const counts = { delivered: 0, shipped: 0, processing: 0, backordered: 0 }
+      orders.value.forEach((order) => {
+        const key = order.status.toLowerCase()
+        if (counts[key] !== undefined) counts[key]++
+      })
+      return counts
+    })
 
     const getOrderStatusClass = (status) => {
       const statusMap = {
@@ -212,9 +218,11 @@ export default {
     }
 
     const formatDate = (dateString) => {
-      const { currentLocale } = useI18n()
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return '—'
       const locale = currentLocale.value === 'ja' ? 'ja-JP' : 'en-US'
-      return new Date(dateString).toLocaleDateString(locale, {
+      return date.toLocaleDateString(locale, {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
@@ -233,7 +241,7 @@ export default {
       orders,
       restockingOrders,
       restockingError,
-      getOrdersByStatus,
+      orderStatusCounts,
       getOrderStatusClass,
       formatDate,
       currencySymbol,

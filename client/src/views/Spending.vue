@@ -219,6 +219,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { api } from '../api'
 import { useFilters } from '../composables/useFilters'
 import { useI18n } from '../composables/useI18n'
+import { useTranslations } from '../composables/useTranslations'
 import { formatCurrency as formatCurrencyUtil } from '../utils/currency'
 import CostDetailModal from '../components/CostDetailModal.vue'
 
@@ -229,6 +230,7 @@ export default {
   },
   setup() {
     const { t, currentCurrency } = useI18n()
+    const { translateMonth, translateCategory } = useTranslations()
     const loading = ref(true)
     const error = ref(null)
     const allMonthlySpending = ref([])
@@ -452,7 +454,9 @@ export default {
     }
 
     const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('en-US', {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return '—'
+      return date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric'
       })
@@ -460,49 +464,11 @@ export default {
 
     const formatDateShort = (dateString) => {
       const date = new Date(dateString)
+      if (isNaN(date.getTime())) return '—'
       const month = (date.getMonth() + 1).toString().padStart(2, '0')
       const day = date.getDate().toString().padStart(2, '0')
       const year = date.getFullYear().toString().slice(-2)
       return `${month}/${day}/${year}`
-    }
-
-    const translateMonth = (month) => {
-      const monthMap = {
-        Jan: t('months.jan'),
-        Feb: t('months.feb'),
-        Mar: t('months.mar'),
-        Apr: t('months.apr'),
-        May: t('months.may'),
-        Jun: t('months.jun'),
-        Jul: t('months.jul'),
-        Aug: t('months.aug'),
-        Sep: t('months.sep'),
-        Oct: t('months.oct'),
-        Nov: t('months.nov'),
-        Dec: t('months.dec')
-      }
-      return monthMap[month] || month
-    }
-
-    const translateCategory = (category) => {
-      // First try spending categories
-      const spendingCategoryMap = {
-        'Raw Materials': t('spendingCategories.rawMaterials'),
-        Components: t('spendingCategories.components'),
-        Equipment: t('spendingCategories.equipment'),
-        Consumables: t('spendingCategories.consumables')
-      }
-
-      // Then try product categories
-      const productCategoryMap = {
-        'Circuit Boards': t('categories.circuitBoards'),
-        Sensors: t('categories.sensors'),
-        Actuators: t('categories.actuators'),
-        Controllers: t('categories.controllers'),
-        'Power Supplies': t('categories.powerSupplies')
-      }
-
-      return spendingCategoryMap[category] || productCategoryMap[category] || category
     }
 
     const handleTransactionClick = (transaction) => {

@@ -14,16 +14,16 @@
             <div class="trend-icon">↑</div>
             <div>
               <div class="trend-label">{{ t('demand.increasingDemand') }}</div>
-              <div class="trend-count">{{ t('demand.itemsCount', { count: getForecastsByTrend('increasing').length }) }}</div>
+              <div class="trend-count">{{ t('demand.itemsCount', { count: forecastsByTrend.increasing.length }) }}</div>
             </div>
           </div>
           <div class="trend-items">
-            <div v-for="item in getForecastsByTrend('increasing').slice(0, 5)" :key="item.id" class="trend-item">
+            <div v-for="item in forecastsByTrend.increasing.slice(0, 5)" :key="item.id" class="trend-item">
               <span class="item-name">{{ item.item_name }}</span>
               <span class="item-change">+{{ getChangePercent(item) }}%</span>
             </div>
-            <div v-if="getForecastsByTrend('increasing').length > 5" class="more-items">
-              +{{ getForecastsByTrend('increasing').length - 5 }} {{ t('demand.more') }}
+            <div v-if="forecastsByTrend.increasing.length > 5" class="more-items">
+              +{{ forecastsByTrend.increasing.length - 5 }} {{ t('demand.more') }}
             </div>
           </div>
         </div>
@@ -33,16 +33,18 @@
             <div class="trend-icon">→</div>
             <div>
               <div class="trend-label">{{ t('demand.stableDemand') }}</div>
-              <div class="trend-count">{{ t('demand.itemsCount', { count: getForecastsByTrend('stable').length }) }}</div>
+              <div class="trend-count">
+                {{ t('demand.itemsCount', { count: forecastsByTrend.stable.length }) }}
+              </div>
             </div>
           </div>
           <div class="trend-items">
-            <div v-for="item in getForecastsByTrend('stable').slice(0, 5)" :key="item.id" class="trend-item">
+            <div v-for="item in forecastsByTrend.stable.slice(0, 5)" :key="item.id" class="trend-item">
               <span class="item-name">{{ item.item_name }}</span>
               <span class="item-change neutral">{{ getChangePercent(item) }}%</span>
             </div>
-            <div v-if="getForecastsByTrend('stable').length > 5" class="more-items">
-              +{{ getForecastsByTrend('stable').length - 5 }} {{ t('demand.more') }}
+            <div v-if="forecastsByTrend.stable.length > 5" class="more-items">
+              +{{ forecastsByTrend.stable.length - 5 }} {{ t('demand.more') }}
             </div>
           </div>
         </div>
@@ -52,16 +54,18 @@
             <div class="trend-icon">↓</div>
             <div>
               <div class="trend-label">{{ t('demand.decreasingDemand') }}</div>
-              <div class="trend-count">{{ t('demand.itemsCount', { count: getForecastsByTrend('decreasing').length }) }}</div>
+              <div class="trend-count">
+                {{ t('demand.itemsCount', { count: forecastsByTrend.decreasing.length }) }}
+              </div>
             </div>
           </div>
           <div class="trend-items">
-            <div v-for="item in getForecastsByTrend('decreasing').slice(0, 5)" :key="item.id" class="trend-item">
+            <div v-for="item in forecastsByTrend.decreasing.slice(0, 5)" :key="item.id" class="trend-item">
               <span class="item-name">{{ item.item_name }}</span>
               <span class="item-change">{{ getChangePercent(item) }}%</span>
             </div>
-            <div v-if="getForecastsByTrend('decreasing').length > 5" class="more-items">
-              +{{ getForecastsByTrend('decreasing').length - 5 }} {{ t('demand.more') }}
+            <div v-if="forecastsByTrend.decreasing.length > 5" class="more-items">
+              +{{ forecastsByTrend.decreasing.length - 5 }} {{ t('demand.more') }}
             </div>
           </div>
         </div>
@@ -86,14 +90,16 @@
             </thead>
             <tbody>
               <tr v-for="forecast in forecasts" :key="forecast.id">
-                <td><strong>{{ forecast.item_sku }}</strong></td>
+                <td>
+                  <strong>{{ forecast.item_sku }}</strong>
+                </td>
                 <td>{{ forecast.item_name }}</td>
                 <td>{{ forecast.current_demand }}</td>
-                <td><strong>{{ forecast.forecasted_demand }}</strong></td>
                 <td>
-                  <span :style="{ color: getChangeColor(forecast) }">
-                    {{ getChangePercent(forecast) }}%
-                  </span>
+                  <strong>{{ forecast.forecasted_demand }}</strong>
+                </td>
+                <td>
+                  <span :style="{ color: getChangeColor(forecast) }"> {{ getChangePercent(forecast) }}% </span>
                 </td>
                 <td>
                   <span :class="['badge', forecast.trend]">
@@ -119,7 +125,7 @@ import { useI18n } from '../composables/useI18n'
 export default {
   name: 'Demand',
   setup() {
-    const { t } = useI18n()
+    const { t, currentLocale } = useI18n()
     const loading = ref(true)
     const error = ref(null)
     const allForecasts = ref([])
@@ -135,8 +141,8 @@ export default {
       }
 
       // Get SKUs of items that match the filters
-      const validSkus = new Set(inventoryItems.value.map(item => item.sku))
-      return allForecasts.value.filter(f => validSkus.has(f.item_sku))
+      const validSkus = new Set(inventoryItems.value.map((item) => item.sku))
+      return allForecasts.value.filter((f) => validSkus.has(f.item_sku))
     })
 
     const loadForecasts = async () => {
@@ -166,17 +172,28 @@ export default {
       loadForecasts()
     })
 
-    const getForecastsByTrend = (trend) => {
-      return forecasts.value.filter(f => f.trend === trend)
-    }
+    // Single pass over forecasts, grouped by trend (was ~15 filter() calls from the template)
+    const forecastsByTrend = computed(() => {
+      const groups = { increasing: [], stable: [], decreasing: [] }
+      forecasts.value.forEach((f) => {
+        if (groups[f.trend]) groups[f.trend].push(f)
+      })
+      return groups
+    })
 
     const getChangePercent = (forecast) => {
-      const change = ((forecast.forecasted_demand - forecast.current_demand) / forecast.current_demand * 100).toFixed(1)
+      // Avoid divide-by-zero (Infinity/NaN) when there is no current demand
+      if (!forecast.current_demand) return '—'
+      const change = (((forecast.forecasted_demand - forecast.current_demand) / forecast.current_demand) * 100).toFixed(
+        1
+      )
       return change > 0 ? `+${change}` : change
     }
 
     const getChangeColor = (forecast) => {
       const change = forecast.forecasted_demand - forecast.current_demand
+      // Guard divide-by-zero: treat "no current demand" as neutral
+      if (!forecast.current_demand) return '#3b82f6'
       const changePercent = Math.abs((change / forecast.current_demand) * 100)
 
       // If change is within ±2%, consider it stable and show blue
@@ -191,7 +208,6 @@ export default {
 
     const translatePeriod = (period) => {
       // Period values like "Next 3 months", "Q1 2025", "30 days", etc.
-      const { currentLocale } = useI18n()
       if (currentLocale.value === 'ja') {
         return period
           .replace(/Next\s+/i, '次の')
@@ -214,7 +230,7 @@ export default {
       loading,
       error,
       forecasts,
-      getForecastsByTrend,
+      forecastsByTrend,
       getChangePercent,
       getChangeColor,
       translatePeriod

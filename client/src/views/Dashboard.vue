@@ -380,6 +380,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { api } from '../api'
 import { useFilters } from '../composables/useFilters'
 import { useI18n } from '../composables/useI18n'
+import { useTranslations } from '../composables/useTranslations'
 import { formatCurrency } from '../utils/currency'
 import ProductDetailModal from '../components/ProductDetailModal.vue'
 import BacklogDetailModal from '../components/BacklogDetailModal.vue'
@@ -391,7 +392,8 @@ export default {
     BacklogDetailModal
   },
   setup() {
-    const { t, currentCurrency, translateProductName, translateWarehouse } = useI18n()
+    const { t, currentCurrency, currentLocale, translateProductName, translateWarehouse } = useI18n()
+    const { translateCategory, translateStockLevel, translatePriority } = useTranslations()
     const loading = ref(true)
     const error = ref(null)
     const summary = ref({})
@@ -557,6 +559,11 @@ export default {
       return Math.max(10, Math.ceil(max / 10) * 10)
     })
 
+    // O(1) sku -> inventory item lookup (avoids a .find() per order line item)
+    const inventoryBySku = computed(() => {
+      return new Map(inventoryItems.value.map((i) => [i.sku, i]))
+    })
+
     const topProducts = computed(() => {
       // Calculate top products from filtered order data
       const productMap = {}
@@ -569,7 +576,7 @@ export default {
 
             // Find matching inventory item to get full product details
             // Note: inventoryItems is also filtered by API based on: warehouse, category
-            const invItem = inventoryItems.value.find((i) => i.sku === sku)
+            const invItem = inventoryBySku.value.get(sku)
 
             // Skip products that don't match current inventory filters
             // (e.g., if filtering by warehouse A, don't show products from warehouse B)
@@ -683,42 +690,11 @@ export default {
       return 'danger'
     }
 
-    const translateCategory = (category) => {
-      const categoryMap = {
-        'Circuit Boards': t('categories.circuitBoards'),
-        Sensors: t('categories.sensors'),
-        Actuators: t('categories.actuators'),
-        Controllers: t('categories.controllers'),
-        'Power Supplies': t('categories.powerSupplies')
-      }
-      return categoryMap[category] || category
-    }
-
-    const translateStockLevel = (stockLevel) => {
-      const stockMap = {
-        'In Stock': t('status.inStock'),
-        'Low Stock': t('status.lowStock')
-      }
-      return stockMap[stockLevel] || stockLevel
-    }
-
-    const translatePriority = (priority) => {
-      const priorityMap = {
-        high: t('priority.high'),
-        medium: t('priority.medium'),
-        low: t('priority.low'),
-        High: t('priority.high'),
-        Medium: t('priority.medium'),
-        Low: t('priority.low')
-      }
-      return priorityMap[priority] || priority
-    }
-
     const formatDate = (dateString) => {
       if (!dateString) return '-'
-      const { currentLocale } = useI18n()
-      const locale = currentLocale.value === 'ja' ? 'ja-JP' : 'en-US'
       const date = new Date(dateString)
+      if (isNaN(date.getTime())) return '—'
+      const locale = currentLocale.value === 'ja' ? 'ja-JP' : 'en-US'
       return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })
     }
 

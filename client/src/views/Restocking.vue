@@ -43,11 +43,19 @@
         <div class="summary-row">
           <div class="summary-item">
             <span class="summary-label">{{ t('restocking.totalCost') }}</span>
-            <span class="summary-value">{{ currencySymbol }}{{ totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+            <span class="summary-value"
+              >{{ currencySymbol
+              }}{{ totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span
+            >
           </div>
           <div class="summary-item">
             <span class="summary-label">{{ t('restocking.remainingBudget') }}</span>
-            <span class="summary-value">{{ currencySymbol }}{{ remainingBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+            <span class="summary-value"
+              >{{ currencySymbol
+              }}{{
+                remainingBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+              }}</span
+            >
           </div>
         </div>
 
@@ -69,7 +77,9 @@
             </thead>
             <tbody>
               <tr v-for="item in recommendations" :key="item.item_sku">
-                <td><strong>{{ item.item_sku }}</strong></td>
+                <td>
+                  <strong>{{ item.item_sku }}</strong>
+                </td>
                 <td>{{ translateProductName(item.item_name) }}</td>
                 <td>{{ translateCategory(item.category) }}</td>
                 <td>{{ translateWarehouse(item.warehouse) }}</td>
@@ -81,8 +91,18 @@
                 <td>{{ item.quantity_on_hand }}</td>
                 <td>{{ item.forecasted_demand }}</td>
                 <td>{{ currencySymbol }}{{ item.unit_cost.toFixed(2) }}</td>
-                <td><strong>{{ item.recommended_quantity }}</strong></td>
-                <td>{{ currencySymbol }}{{ item.recommended_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</td>
+                <td>
+                  <strong>{{ item.recommended_quantity }}</strong>
+                </td>
+                <td>
+                  {{ currencySymbol
+                  }}{{
+                    item.recommended_cost.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })
+                  }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -109,11 +129,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { api } from '../api'
 import { useI18n } from '../composables/useI18n'
+import { useTranslations } from '../composables/useTranslations'
 
 export default {
   name: 'Restocking',
   setup() {
     const { t, currentCurrency, translateProductName, translateWarehouse } = useI18n()
+    const { translateCategory } = useTranslations()
 
     const currencySymbol = computed(() => {
       return currentCurrency.value === 'JPY' ? '¥' : '$'
@@ -164,18 +186,6 @@ export default {
       } finally {
         placingOrder.value = false
       }
-    }
-
-    // Mirrors Inventory.vue's category translation map (no shared composable for this yet).
-    const translateCategory = (category) => {
-      const categoryMap = {
-        'Circuit Boards': t('categories.circuitBoards'),
-        'Sensors': t('categories.sensors'),
-        'Actuators': t('categories.actuators'),
-        'Controllers': t('categories.controllers'),
-        'Power Supplies': t('categories.powerSupplies')
-      }
-      return categoryMap[category] || category
     }
 
     onMounted(loadRecommendations)
