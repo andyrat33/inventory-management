@@ -167,6 +167,7 @@ export default {
     loading: 'Loading reports...',
     loadError: 'Failed to load reports: {message}',
     notAvailable: 'N/A',
+    noData: 'No data for the selected filters',
     quarterly: {
       title: 'Quarterly Performance',
       quarter: 'Quarter',

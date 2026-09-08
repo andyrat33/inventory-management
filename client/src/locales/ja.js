@@ -167,6 +167,7 @@ export default {
     loading: 'レポートを読み込んでいます...',
     loadError: 'レポートの読み込みに失敗しました: {message}',
     notAvailable: '該当なし',
+    noData: '選択したフィルターに該当するデータがありません',
     quarterly: {
       title: '四半期業績',
       quarter: '四半期',

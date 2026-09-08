@@ -434,24 +434,24 @@ def get_recent_transactions():
     """Get recent transactions"""
     return recent_transactions
 
-@app.get("/api/reports/quarterly")
-def get_quarterly_reports():
-    """Get quarterly performance reports"""
-    # Calculate quarterly statistics from orders
-    quarters = {}
+# Reverse index: 'YYYY-MM' -> its quarter label
+_MONTH_TO_QUARTER = {m: q for q, months in QUARTER_MAP.items() for m in months}
 
-    for order in orders:
-        order_date = order.get('order_date', '')
-        # Determine quarter
-        if '2025-01' in order_date or '2025-02' in order_date or '2025-03' in order_date:
-            quarter = 'Q1-2025'
-        elif '2025-04' in order_date or '2025-05' in order_date or '2025-06' in order_date:
-            quarter = 'Q2-2025'
-        elif '2025-07' in order_date or '2025-08' in order_date or '2025-09' in order_date:
-            quarter = 'Q3-2025'
-        elif '2025-10' in order_date or '2025-11' in order_date or '2025-12' in order_date:
-            quarter = 'Q4-2025'
-        else:
+@app.get("/api/reports/quarterly")
+def get_quarterly_reports(
+    warehouse: Optional[str] = None,
+    category: Optional[str] = None,
+    status: Optional[str] = None,
+    month: Optional[str] = None
+):
+    """Get quarterly performance reports, honouring the shared filter bar"""
+    filtered = apply_filters(orders, warehouse, category, status)
+    filtered = filter_by_month(filtered, month)
+
+    quarters = {}
+    for order in filtered:
+        quarter = _MONTH_TO_QUARTER.get(_order_year_month(order.get('order_date', '')))
+        if not quarter:
             continue
 
         if quarter not in quarters:
@@ -481,30 +481,34 @@ def get_quarterly_reports():
     return result
 
 @app.get("/api/reports/monthly-trends")
-def get_monthly_trends():
-    """Get month-over-month trends"""
-    months = {}
+def get_monthly_trends(
+    warehouse: Optional[str] = None,
+    category: Optional[str] = None,
+    status: Optional[str] = None,
+    month: Optional[str] = None
+):
+    """Get month-over-month trends, honouring the shared filter bar"""
+    filtered = apply_filters(orders, warehouse, category, status)
+    filtered = filter_by_month(filtered, month)
 
-    for order in orders:
-        order_date = order.get('order_date', '')
-        if not order_date:
+    months = {}
+    for order in filtered:
+        ym = _order_year_month(order.get('order_date', ''))
+        if not ym:
             continue
 
-        # Extract month (format: YYYY-MM-DD)
-        month = order_date[:7]  # Gets YYYY-MM
-
-        if month not in months:
-            months[month] = {
-                'month': month,
+        if ym not in months:
+            months[ym] = {
+                'month': ym,
                 'order_count': 0,
                 'revenue': 0,
                 'delivered_count': 0
             }
 
-        months[month]['order_count'] += 1
-        months[month]['revenue'] += order.get('total_value', 0)
+        months[ym]['order_count'] += 1
+        months[ym]['revenue'] += order.get('total_value', 0)
         if order.get('status') == 'Delivered':
-            months[month]['delivered_count'] += 1
+            months[ym]['delivered_count'] += 1
 
     # Convert to list and sort
     result = list(months.values())

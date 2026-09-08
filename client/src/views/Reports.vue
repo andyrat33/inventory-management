@@ -7,146 +7,150 @@
 
     <div v-if="loading" class="loading">{{ t('reports.loading') }}</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else>
-      <!-- Quarterly Performance -->
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">{{ t('reports.quarterly.title') }}</h3>
-        </div>
-        <div class="table-container">
-          <table class="reports-table">
-            <thead>
-              <tr>
-                <th scope="col">{{ t('reports.quarterly.quarter') }}</th>
-                <th scope="col">{{ t('reports.quarterly.totalOrders') }}</th>
-                <th scope="col">{{ t('reports.quarterly.totalRevenue') }}</th>
-                <th scope="col">{{ t('reports.quarterly.avgOrderValue') }}</th>
-                <th scope="col">{{ t('reports.quarterly.fulfillmentRate') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="q in quarterlyRows" :key="q.quarter">
-                <td>
-                  <strong>{{ q.quarter }}</strong>
-                </td>
-                <td>{{ q.totalOrders }}</td>
-                <td>{{ q.totalRevenue }}</td>
-                <td>{{ q.avgOrderValue }}</td>
-                <td>
-                  <span :class="q.fulfillmentClass">{{ q.fulfillmentRate }}</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div v-else :class="{ 'is-refreshing': refreshing }">
+      <div v-if="!quarterlyRows.length && !monthlyRows.length" class="no-data">
+        {{ t('reports.noData') }}
       </div>
-
-      <!-- Monthly Trends Chart -->
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">{{ t('reports.monthlyTrend.title') }}</h3>
+      <template v-else>
+        <!-- Quarterly Performance -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">{{ t('reports.quarterly.title') }}</h3>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{{ t('reports.quarterly.quarter') }}</th>
+                  <th scope="col">{{ t('reports.quarterly.totalOrders') }}</th>
+                  <th scope="col">{{ t('reports.quarterly.totalRevenue') }}</th>
+                  <th scope="col">{{ t('reports.quarterly.avgOrderValue') }}</th>
+                  <th scope="col">{{ t('reports.quarterly.fulfillmentRate') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="q in quarterlyRows" :key="q.quarter">
+                  <td>
+                    <strong>{{ q.quarter }}</strong>
+                  </td>
+                  <td>{{ q.totalOrders }}</td>
+                  <td>{{ q.totalRevenue }}</td>
+                  <td>{{ q.avgOrderValue }}</td>
+                  <td>
+                    <span :class="q.fulfillmentClass">{{ q.fulfillmentRate }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div class="chart-container">
-          <div class="bar-chart">
-            <div v-for="bar in monthlyChartRows" :key="bar.month" class="bar-wrapper">
-              <div class="bar-container">
-                <div class="bar" :style="{ height: bar.height + 'px' }" :title="bar.title"></div>
+
+        <!-- Monthly Trends Chart -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">{{ t('reports.monthlyTrend.title') }}</h3>
+          </div>
+          <div class="chart-container">
+            <div class="bar-chart">
+              <div v-for="bar in monthlyChartRows" :key="bar.month" class="bar-wrapper">
+                <div class="bar-container">
+                  <div class="bar" :style="{ height: bar.height + 'px' }" :title="bar.title"></div>
+                </div>
+                <div class="bar-label">{{ bar.label }}</div>
               </div>
-              <div class="bar-label">{{ bar.label }}</div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Month-over-Month Comparison -->
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">{{ t('reports.momAnalysis.title') }}</h3>
+        <!-- Month-over-Month Comparison -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">{{ t('reports.momAnalysis.title') }}</h3>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{{ t('reports.momAnalysis.month') }}</th>
+                  <th scope="col">{{ t('reports.momAnalysis.orders') }}</th>
+                  <th scope="col">{{ t('reports.momAnalysis.revenue') }}</th>
+                  <th scope="col">{{ t('reports.momAnalysis.change') }}</th>
+                  <th scope="col">{{ t('reports.momAnalysis.growthRate') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="month in monthlyRows" :key="month.month">
+                  <td>
+                    <strong>{{ month.label }}</strong>
+                  </td>
+                  <td>{{ month.orderCount }}</td>
+                  <td>{{ month.revenue }}</td>
+                  <td>
+                    <span :class="month.changeClass">{{ month.changeText }}</span>
+                  </td>
+                  <td>
+                    <span :class="month.changeClass">{{ month.growthText }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div class="table-container">
-          <table class="reports-table">
-            <thead>
-              <tr>
-                <th scope="col">{{ t('reports.momAnalysis.month') }}</th>
-                <th scope="col">{{ t('reports.momAnalysis.orders') }}</th>
-                <th scope="col">{{ t('reports.momAnalysis.revenue') }}</th>
-                <th scope="col">{{ t('reports.momAnalysis.change') }}</th>
-                <th scope="col">{{ t('reports.momAnalysis.growthRate') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="month in monthlyRows" :key="month.month">
-                <td>
-                  <strong>{{ month.label }}</strong>
-                </td>
-                <td>{{ month.orderCount }}</td>
-                <td>{{ month.revenue }}</td>
-                <td>
-                  <span :class="month.changeClass">{{ month.changeText }}</span>
-                </td>
-                <td>
-                  <span :class="month.changeClass">{{ month.growthText }}</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      <!-- Summary Stats -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">{{ t('reports.summary.totalRevenueYtd') }}</div>
-          <div class="stat-value">{{ summaryStats.totalRevenue }}</div>
+        <!-- Summary Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">{{ t('reports.summary.totalRevenueYtd') }}</div>
+            <div class="stat-value">{{ summaryStats.totalRevenue }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">{{ t('reports.summary.avgMonthlyRevenue') }}</div>
+            <div class="stat-value">{{ summaryStats.avgMonthlyRevenue }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">{{ t('reports.summary.totalOrdersYtd') }}</div>
+            <div class="stat-value">{{ summaryStats.totalOrders }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">{{ t('reports.summary.bestQuarter') }}</div>
+            <div class="stat-value">{{ summaryStats.bestQuarter }}</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">{{ t('reports.summary.avgMonthlyRevenue') }}</div>
-          <div class="stat-value">{{ summaryStats.avgMonthlyRevenue }}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">{{ t('reports.summary.totalOrdersYtd') }}</div>
-          <div class="stat-value">{{ summaryStats.totalOrders }}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">{{ t('reports.summary.bestQuarter') }}</div>
-          <div class="stat-value">{{ summaryStats.bestQuarter }}</div>
-        </div>
-      </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, computed, onMounted, watch } from 'vue'
+import { api } from '../api'
+import { useFilters } from '../composables/useFilters'
 import { useI18n } from '../composables/useI18n'
-
-const API_BASE_URL = 'http://localhost:8001/api'
+import { formatCurrencyWithDecimals } from '../utils/currency'
 
 const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 export default {
   name: 'Reports',
   setup() {
-    const { t } = useI18n()
+    const { t, currentCurrency } = useI18n()
+    const { selectedPeriod, selectedLocation, selectedCategory, selectedStatus, getCurrentFilters } = useFilters()
 
     const loading = ref(true)
+    // Background refetch flag (filter changes) so existing tables/chart stay visible
+    const refreshing = ref(false)
     const error = ref(null)
     const quarterlyData = ref([])
     const monthlyData = ref([])
 
     // --- Pure formatting helpers (no I/O, no O(n) scans) ---
 
-    // Format a number as "1,234.56" (grouped integer part, exactly 2 decimals)
+    // Locale-aware currency: USD "$1,234.56" in English, JPY "¥…" in Japanese
+    // (the util converts + drops decimals for JPY). Called inside the computed
+    // view-models so they stay reactive to currentCurrency.
     const formatCurrency = (num) => {
       const value = Number(num) || 0
-      return (
-        '$' +
-        value.toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        })
-      )
+      return formatCurrencyWithDecimals(value, currentCurrency.value, 2)
     }
 
     // Convert "YYYY-MM" to a localised "Mon YYYY" label
@@ -172,7 +176,7 @@ export default {
     const changeText = (delta) => {
       if (delta > 0) return '+' + formatCurrency(delta)
       if (delta < 0) return '-' + formatCurrency(Math.abs(delta))
-      return '$0.00'
+      return formatCurrency(0)
     }
 
     const growthText = (current, previous) => {
@@ -248,30 +252,42 @@ export default {
       }
     })
 
-    const loadData = async () => {
+    const loadData = async ({ initial = false } = {}) => {
       try {
-        loading.value = true
+        if (initial) {
+          loading.value = true
+        } else {
+          refreshing.value = true
+        }
         error.value = null
 
-        const [quarterlyResponse, monthlyResponse] = await Promise.all([
-          axios.get(`${API_BASE_URL}/reports/quarterly`),
-          axios.get(`${API_BASE_URL}/reports/monthly-trends`)
+        const filters = getCurrentFilters()
+        const [quarterly, monthly] = await Promise.all([
+          api.getQuarterlyReports(filters),
+          api.getMonthlyTrends(filters)
         ])
 
-        quarterlyData.value = quarterlyResponse.data
-        monthlyData.value = monthlyResponse.data
+        quarterlyData.value = quarterly
+        monthlyData.value = monthly
       } catch (err) {
         error.value = t('reports.loadError', { message: err.message })
       } finally {
         loading.value = false
+        refreshing.value = false
       }
     }
 
-    onMounted(loadData)
+    // Refetch when any shared filter changes
+    watch([selectedPeriod, selectedLocation, selectedCategory, selectedStatus], () => {
+      loadData()
+    })
+
+    onMounted(() => loadData({ initial: true }))
 
     return {
       t,
       loading,
+      refreshing,
       error,
       quarterlyRows,
       monthlyChartRows,
@@ -287,46 +303,16 @@ export default {
   padding: 0;
 }
 
-.card {
-  background: white;
-  border-radius: 10px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #e2e8f0;
+/* Keep tables/chart visible during a filter-triggered refetch */
+.is-refreshing {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
-.card-header {
-  margin-bottom: 1.5rem;
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #0f172a;
-  margin: 0;
-}
-
-.reports-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.reports-table th {
-  background: #f8fafc;
-  padding: 0.75rem;
-  text-align: left;
-  font-weight: 600;
+.no-data {
+  text-align: center;
+  padding: 3rem;
   color: #64748b;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.reports-table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.reports-table tr:hover {
-  background: #f8fafc;
 }
 
 .chart-container {
@@ -370,62 +356,12 @@ export default {
 }
 
 .bar-label {
-  margin-top: 0.5rem;
   font-size: 0.75rem;
   color: #64748b;
   text-align: center;
   transform: rotate(-45deg);
   white-space: nowrap;
   margin-top: 1.5rem;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.stat-card {
-  background: white;
-  border-radius: 10px;
-  padding: 1.5rem;
-  border: 1px solid #e2e8f0;
-  border-left: 4px solid #3b82f6;
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: #64748b;
-  margin-bottom: 0.5rem;
-}
-
-.stat-value {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.badge.success {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.badge.warning {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.badge.danger {
-  background: #fee2e2;
-  color: #991b1b;
 }
 
 .positive-change {
@@ -436,19 +372,5 @@ export default {
 .negative-change {
   color: #dc2626;
   font-weight: 600;
-}
-
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: #64748b;
-}
-
-.error {
-  background: #fee2e2;
-  color: #991b1b;
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1rem 0;
 }
 </style>
