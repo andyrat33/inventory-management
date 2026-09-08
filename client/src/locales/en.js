@@ -143,7 +143,8 @@ export default {
       orderDate: 'Order Date',
       expectedDelivery: 'Expected Delivery',
       status: 'Status'
-    }
+    },
+    restockingLoadError: "Couldn't load submitted restocking orders."
   },
 
   // Finance/Spending
@@ -346,7 +347,11 @@ export default {
     priority: 'Priority',
     dueDate: 'Due Date',
     addTask: 'Add Task',
-    noTasks: 'No tasks yet. Add your first task above!'
+    noTasks: 'No tasks yet. Add your first task above!',
+    errorLoad: "Couldn't load your tasks. Try reopening this window.",
+    errorAdd: "Couldn't add the task. Please try again.",
+    errorDelete: "Couldn't delete the task. Please try again.",
+    errorToggle: "Couldn't update the task. Please try again."
   },
 
   // Language

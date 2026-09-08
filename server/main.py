@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
@@ -48,9 +49,17 @@ def apply_filters(items: list, warehouse: Optional[str] = None, category: Option
     return filtered
 
 # CORS middleware
+# Explicit origin allowlist. Never pair "*" with allow_credentials=True: Starlette
+# then reflects any request Origin back with Access-Control-Allow-Credentials: true.
+# Override for other environments via ALLOWED_ORIGINS (comma-separated).
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -517,4 +526,5 @@ def create_restocking_order(request: CreateRestockingOrderRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    # Bind loopback by default; set HOST=0.0.0.0 to expose (e.g. behind a proxy).
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8001")))

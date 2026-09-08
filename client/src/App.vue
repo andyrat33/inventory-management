@@ -13,76 +13,173 @@
           :aria-label="isSidebarCollapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')"
           :data-tooltip="isSidebarCollapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')"
         >
-          <svg class="toggle-icon" :class="{ flipped: isSidebarCollapsed }" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg
+            class="toggle-icon"
+            :class="{ flipped: isSidebarCollapsed }"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+          >
+            <path
+              d="M10 4L6 8L10 12"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
         </button>
       </div>
 
       <nav class="sidebar-nav">
-        <router-link to="/" class="sidebar-nav-item" :class="{ active: $route.path === '/' }" :data-tooltip="t('nav.overview')">
+        <router-link
+          to="/"
+          class="sidebar-nav-item"
+          :class="{ active: $route.path === '/' }"
+          :data-tooltip="t('nav.overview')"
+        >
           <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="2.5" y="2.5" width="6" height="6" rx="1"/>
-            <rect x="11.5" y="2.5" width="6" height="6" rx="1"/>
-            <rect x="2.5" y="11.5" width="6" height="6" rx="1"/>
-            <rect x="11.5" y="11.5" width="6" height="6" rx="1"/>
+            <rect x="2.5" y="2.5" width="6" height="6" rx="1" />
+            <rect x="11.5" y="2.5" width="6" height="6" rx="1" />
+            <rect x="2.5" y="11.5" width="6" height="6" rx="1" />
+            <rect x="11.5" y="11.5" width="6" height="6" rx="1" />
           </svg>
           <span v-if="!isSidebarCollapsed">{{ t('nav.overview') }}</span>
         </router-link>
 
-        <router-link to="/inventory" class="sidebar-nav-item" :class="{ active: $route.path === '/inventory' }" :data-tooltip="t('nav.inventory')">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
-            <path d="M10 2.5L17.5 6.25V13.75L10 17.5L2.5 13.75V6.25L10 2.5Z"/>
-            <path d="M2.5 6.25L10 10L17.5 6.25"/>
-            <path d="M10 10V17.5"/>
+        <router-link
+          to="/inventory"
+          class="sidebar-nav-item"
+          :class="{ active: $route.path === '/inventory' }"
+          :data-tooltip="t('nav.inventory')"
+        >
+          <svg
+            class="nav-icon"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          >
+            <path d="M10 2.5L17.5 6.25V13.75L10 17.5L2.5 13.75V6.25L10 2.5Z" />
+            <path d="M2.5 6.25L10 10L17.5 6.25" />
+            <path d="M10 10V17.5" />
           </svg>
           <span v-if="!isSidebarCollapsed">{{ t('nav.inventory') }}</span>
         </router-link>
 
-        <router-link to="/orders" class="sidebar-nav-item" :class="{ active: $route.path === '/orders' }" :data-tooltip="t('nav.orders')">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
-            <rect x="4" y="3.5" width="12" height="14" rx="1.5"/>
-            <path d="M7.5 2.5H12.5V4.5H7.5V2.5Z"/>
-            <path d="M7 8.5H13"/>
-            <path d="M7 11.5H13"/>
-            <path d="M7 14.5H10.5"/>
+        <router-link
+          to="/orders"
+          class="sidebar-nav-item"
+          :class="{ active: $route.path === '/orders' }"
+          :data-tooltip="t('nav.orders')"
+        >
+          <svg
+            class="nav-icon"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          >
+            <rect x="4" y="3.5" width="12" height="14" rx="1.5" />
+            <path d="M7.5 2.5H12.5V4.5H7.5V2.5Z" />
+            <path d="M7 8.5H13" />
+            <path d="M7 11.5H13" />
+            <path d="M7 14.5H10.5" />
           </svg>
           <span v-if="!isSidebarCollapsed">{{ t('nav.orders') }}</span>
         </router-link>
 
-        <router-link to="/spending" class="sidebar-nav-item" :class="{ active: $route.path === '/spending' }" :data-tooltip="t('nav.finance')">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-            <path d="M3 17V8"/>
-            <path d="M8.5 17V3"/>
-            <path d="M14 17V10.5"/>
-            <path d="M2.5 17H17.5"/>
+        <router-link
+          to="/spending"
+          class="sidebar-nav-item"
+          :class="{ active: $route.path === '/spending' }"
+          :data-tooltip="t('nav.finance')"
+        >
+          <svg
+            class="nav-icon"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          >
+            <path d="M3 17V8" />
+            <path d="M8.5 17V3" />
+            <path d="M14 17V10.5" />
+            <path d="M2.5 17H17.5" />
           </svg>
           <span v-if="!isSidebarCollapsed">{{ t('nav.finance') }}</span>
         </router-link>
 
-        <router-link to="/demand" class="sidebar-nav-item" :class="{ active: $route.path === '/demand' }" :data-tooltip="t('nav.demandForecast')">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2.5 14.5L7.5 9.5L11 13L17.5 5.5"/>
-            <path d="M13 5.5H17.5V10"/>
+        <router-link
+          to="/demand"
+          class="sidebar-nav-item"
+          :class="{ active: $route.path === '/demand' }"
+          :data-tooltip="t('nav.demandForecast')"
+        >
+          <svg
+            class="nav-icon"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M2.5 14.5L7.5 9.5L11 13L17.5 5.5" />
+            <path d="M13 5.5H17.5V10" />
           </svg>
           <span v-if="!isSidebarCollapsed">{{ t('nav.demandForecast') }}</span>
         </router-link>
 
-        <router-link to="/restocking" class="sidebar-nav-item" :class="{ active: $route.path === '/restocking' }" :data-tooltip="t('nav.restocking')">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
-            <path d="M10 2.5L17.5 6.25V13.75L10 17.5L2.5 13.75V6.25L10 2.5Z"/>
-            <path d="M10 10.5V15"/>
-            <path d="M7.75 12.75H12.25"/>
+        <router-link
+          to="/restocking"
+          class="sidebar-nav-item"
+          :class="{ active: $route.path === '/restocking' }"
+          :data-tooltip="t('nav.restocking')"
+        >
+          <svg
+            class="nav-icon"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          >
+            <path d="M10 2.5L17.5 6.25V13.75L10 17.5L2.5 13.75V6.25L10 2.5Z" />
+            <path d="M10 10.5V15" />
+            <path d="M7.75 12.75H12.25" />
           </svg>
           <span v-if="!isSidebarCollapsed">{{ t('nav.restocking') }}</span>
         </router-link>
 
-        <router-link to="/reports" class="sidebar-nav-item" :class="{ active: $route.path === '/reports' }" data-tooltip="Reports">
-          <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
-            <path d="M5.5 2.5H11.5L15 6V16C15 16.5523 14.5523 17 14 17H5.5C4.94772 17 4.5 16.5523 4.5 16V3.5C4.5 2.94772 4.94772 2.5 5.5 2.5Z"/>
-            <path d="M11.5 2.5V6H15"/>
-            <path d="M7 10H12"/>
-            <path d="M7 12.5H12"/>
+        <router-link
+          to="/reports"
+          class="sidebar-nav-item"
+          :class="{ active: $route.path === '/reports' }"
+          data-tooltip="Reports"
+        >
+          <svg
+            class="nav-icon"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          >
+            <path
+              d="M5.5 2.5H11.5L15 6V16C15 16.5523 14.5523 17 14 17H5.5C4.94772 17 4.5 16.5523 4.5 16V3.5C4.5 2.94772 4.94772 2.5 5.5 2.5Z"
+            />
+            <path d="M11.5 2.5V6H15" />
+            <path d="M7 10H12" />
+            <path d="M7 12.5H12" />
           </svg>
           <span v-if="!isSidebarCollapsed">Reports</span>
         </router-link>
@@ -105,15 +202,13 @@
       </main>
     </div>
 
-    <ProfileDetailsModal
-      :is-open="showProfileDetails"
-      @close="showProfileDetails = false"
-    />
+    <ProfileDetailsModal :is-open="showProfileDetails" @close="showProfileDetails = false" />
 
     <TasksModal
       :is-open="showTasks"
       :tasks="tasks"
-      @close="showTasks = false"
+      :error="tasksError"
+      @close="closeTasks"
       @add-task="addTask"
       @delete-task="deleteTask"
       @toggle-task="toggleTask"
@@ -147,6 +242,7 @@ export default {
     const showProfileDetails = ref(false)
     const showTasks = ref(false)
     const apiTasks = ref([])
+    const tasksError = ref(null)
 
     const STORAGE_KEY = 'sidebar-collapsed'
     const COLLAPSE_QUERY = '(max-width: 1024px)'
@@ -156,7 +252,9 @@ export default {
 
     const mql = window.matchMedia(COLLAPSE_QUERY)
     const isBelowBreakpoint = ref(mql.matches)
-    const handleBreakpointChange = (e) => { isBelowBreakpoint.value = e.matches }
+    const handleBreakpointChange = (e) => {
+      isBelowBreakpoint.value = e.matches
+    }
 
     const isSidebarCollapsed = computed(() =>
       userCollapsed.value !== null ? userCollapsed.value : isBelowBreakpoint.value
@@ -174,48 +272,55 @@ export default {
     })
 
     const loadTasks = async () => {
+      tasksError.value = null
       try {
         apiTasks.value = await api.getTasks()
       } catch (err) {
         console.error('Failed to load tasks:', err)
+        tasksError.value = t('tasks.errorLoad')
       }
     }
 
     const addTask = async (taskData) => {
+      tasksError.value = null
       try {
         const newTask = await api.createTask(taskData)
         // Add new task to the beginning of the array
         apiTasks.value.unshift(newTask)
       } catch (err) {
         console.error('Failed to add task:', err)
+        tasksError.value = t('tasks.errorAdd')
       }
     }
 
     const deleteTask = async (taskId) => {
+      tasksError.value = null
       try {
         // Check if it's a mock task (from currentUser)
-        const isMockTask = currentUser.value.tasks.some(t => t.id === taskId)
+        const isMockTask = currentUser.value.tasks.some((t) => t.id === taskId)
 
         if (isMockTask) {
           // Remove from mock tasks
-          const index = currentUser.value.tasks.findIndex(t => t.id === taskId)
+          const index = currentUser.value.tasks.findIndex((t) => t.id === taskId)
           if (index !== -1) {
             currentUser.value.tasks.splice(index, 1)
           }
         } else {
           // Remove from API tasks
           await api.deleteTask(taskId)
-          apiTasks.value = apiTasks.value.filter(t => t.id !== taskId)
+          apiTasks.value = apiTasks.value.filter((t) => t.id !== taskId)
         }
       } catch (err) {
         console.error('Failed to delete task:', err)
+        tasksError.value = t('tasks.errorDelete')
       }
     }
 
     const toggleTask = async (taskId) => {
+      tasksError.value = null
       try {
         // Check if it's a mock task (from currentUser)
-        const mockTask = currentUser.value.tasks.find(t => t.id === taskId)
+        const mockTask = currentUser.value.tasks.find((t) => t.id === taskId)
 
         if (mockTask) {
           // Toggle mock task status
@@ -223,14 +328,20 @@ export default {
         } else {
           // Toggle API task
           const updatedTask = await api.toggleTask(taskId)
-          const index = apiTasks.value.findIndex(t => t.id === taskId)
+          const index = apiTasks.value.findIndex((t) => t.id === taskId)
           if (index !== -1) {
             apiTasks.value[index] = updatedTask
           }
         }
       } catch (err) {
         console.error('Failed to toggle task:', err)
+        tasksError.value = t('tasks.errorToggle')
       }
+    }
+
+    const closeTasks = () => {
+      showTasks.value = false
+      tasksError.value = null
     }
 
     onMounted(() => {
@@ -247,6 +358,8 @@ export default {
       showProfileDetails,
       showTasks,
       tasks,
+      tasksError,
+      closeTasks,
       addTask,
       deleteTask,
       toggleTask,
@@ -270,7 +383,16 @@ export default {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    sans-serif;
   background: #f8fafc;
   color: #1e293b;
   -webkit-font-smoothing: antialiased;
@@ -418,7 +540,9 @@ body {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.15s ease, visibility 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
   z-index: 1100;
 }
 

@@ -46,7 +46,9 @@
             </thead>
             <tbody>
               <tr v-for="order in orders" :key="order.id">
-                <td class="col-order-number"><strong>{{ order.order_number }}</strong></td>
+                <td class="col-order-number">
+                  <strong>{{ order.order_number }}</strong>
+                </td>
                 <td class="col-customer">{{ translateCustomerName(order.customer) }}</td>
                 <td class="col-items">
                   <details class="items-details">
@@ -56,7 +58,10 @@
                     <div class="items-dropdown">
                       <div v-for="(item, idx) in order.items" :key="idx" class="item-entry">
                         <span class="item-name">{{ translateProductName(item.name) }}</span>
-                        <span class="item-meta">{{ t('orders.quantity') }}: {{ item.quantity }} @ {{ currencySymbol }}{{ item.unit_price }}</span>
+                        <span class="item-meta"
+                          >{{ t('orders.quantity') }}: {{ item.quantity }} @ {{ currencySymbol
+                          }}{{ item.unit_price }}</span
+                        >
                       </div>
                     </div>
                   </details>
@@ -68,7 +73,9 @@
                 </td>
                 <td class="col-date">{{ formatDate(order.order_date) }}</td>
                 <td class="col-date">{{ formatDate(order.expected_delivery) }}</td>
-                <td class="col-value"><strong>{{ currencySymbol }}{{ order.total_value.toLocaleString() }}</strong></td>
+                <td class="col-value">
+                  <strong>{{ currencySymbol }}{{ order.total_value.toLocaleString() }}</strong>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -82,7 +89,10 @@
             <p class="card-subtitle">{{ t('orders.submittedOrders.description') }}</p>
           </div>
         </div>
-        <div v-if="restockingOrders.length === 0" class="empty-state">
+        <div v-if="restockingError" class="error">
+          {{ restockingError }}
+        </div>
+        <div v-else-if="restockingOrders.length === 0" class="empty-state">
           {{ t('orders.submittedOrders.noOrders') }}
         </div>
         <div v-else class="table-container">
@@ -100,10 +110,19 @@
             </thead>
             <tbody>
               <tr v-for="order in restockingOrders" :key="order.id">
-                <td class="col-order-number"><strong>{{ order.order_number }}</strong></td>
+                <td class="col-order-number">
+                  <strong>{{ order.order_number }}</strong>
+                </td>
                 <td class="col-value">{{ currencySymbol }}{{ order.budget.toLocaleString() }}</td>
-                <td class="col-value">{{ currencySymbol }}{{ order.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</td>
-                <td class="col-lead-time">{{ t('orders.submittedOrders.leadTimeDays', { count: order.lead_time_days }) }}</td>
+                <td class="col-value">
+                  {{ currencySymbol
+                  }}{{
+                    order.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                  }}
+                </td>
+                <td class="col-lead-time">
+                  {{ t('orders.submittedOrders.leadTimeDays', { count: order.lead_time_days }) }}
+                </td>
                 <td class="col-date">{{ formatDate(order.order_date) }}</td>
                 <td class="col-date">{{ formatDate(order.expected_delivery) }}</td>
                 <td class="col-status">
@@ -138,15 +157,10 @@ export default {
     const error = ref(null)
     const orders = ref([])
     const restockingOrders = ref([])
+    const restockingError = ref(null)
 
     // Use shared filters
-    const {
-      selectedPeriod,
-      selectedLocation,
-      selectedCategory,
-      selectedStatus,
-      getCurrentFilters
-    } = useFilters()
+    const { selectedPeriod, selectedLocation, selectedCategory, selectedStatus, getCurrentFilters } = useFilters()
 
     const loadOrders = async () => {
       try {
@@ -174,23 +188,25 @@ export default {
 
     // Submitted restocking orders are unfiltered (not tied to the shared filter bar)
     const loadRestockingOrders = async () => {
+      restockingError.value = null
       try {
         restockingOrders.value = await api.getRestockingOrders()
       } catch (err) {
         console.error('Failed to load restocking orders:', err)
+        restockingError.value = t('orders.restockingLoadError')
       }
     }
 
     const getOrdersByStatus = (status) => {
-      return orders.value.filter(order => order.status === status)
+      return orders.value.filter((order) => order.status === status)
     }
 
     const getOrderStatusClass = (status) => {
       const statusMap = {
-        'Delivered': 'success',
-        'Shipped': 'info',
-        'Processing': 'warning',
-        'Backordered': 'danger'
+        Delivered: 'success',
+        Shipped: 'info',
+        Processing: 'warning',
+        Backordered: 'danger'
       }
       return statusMap[status] || 'info'
     }
@@ -216,6 +232,7 @@ export default {
       error,
       orders,
       restockingOrders,
+      restockingError,
       getOrdersByStatus,
       getOrderStatusClass,
       formatDate,
@@ -325,7 +342,9 @@ export default {
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 0.75rem;
   z-index: 10;
   min-width: 300px;

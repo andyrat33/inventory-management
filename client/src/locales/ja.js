@@ -143,7 +143,8 @@ export default {
       orderDate: '注文日',
       expectedDelivery: '予定配達日',
       status: 'ステータス'
-    }
+    },
+    restockingLoadError: '提出済みの再入荷注文を読み込めませんでした。'
   },
 
   // Finance/Spending
@@ -346,7 +347,11 @@ export default {
     priority: '優先度',
     dueDate: '期限',
     addTask: 'タスクを追加',
-    noTasks: 'タスクがありません。上記からタスクを追加してください！'
+    noTasks: 'タスクがありません。上記からタスクを追加してください！',
+    errorLoad: 'タスクを読み込めませんでした。このウィンドウを開き直してください。',
+    errorAdd: 'タスクを追加できませんでした。もう一度お試しください。',
+    errorDelete: 'タスクを削除できませんでした。もう一度お試しください。',
+    errorToggle: 'タスクを更新できませんでした。もう一度お試しください。'
   },
 
   // Language
