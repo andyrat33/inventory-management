@@ -2,12 +2,20 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="isOpen && inventoryItem" class="modal-overlay" @click="close">
-        <div class="modal-container" @click.stop>
+        <div
+          ref="dialogRef"
+          class="modal-container"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="inventory-detail-title"
+          tabindex="-1"
+          @click.stop
+        >
           <div class="modal-header">
-            <h3 class="modal-title">Inventory Item Details</h3>
-            <button class="close-button" @click="close">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <h3 id="inventory-detail-title" class="modal-title">Inventory Item Details</h3>
+            <button class="close-button" :aria-label="t('common.close')" @click="close">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
           </div>
@@ -16,9 +24,9 @@
             <div class="item-header">
               <div class="item-icon" :class="getStockIconClass()">
                 <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                  <rect x="8" y="12" width="32" height="28" rx="2" stroke="currentColor" stroke-width="2.5"/>
-                  <path d="M16 8V16M32 8V16M8 20H40" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-                  <path d="M16 28H32M16 34H24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <rect x="8" y="12" width="32" height="28" rx="2" stroke="currentColor" stroke-width="2.5" />
+                  <path d="M16 8V16M32 8V16M8 20H40" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                  <path d="M16 28H32M16 34H24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
                 </svg>
               </div>
               <div class="item-title-section">
@@ -61,7 +69,11 @@
               <div class="info-item">
                 <div class="info-label">Units Remaining</div>
                 <div class="info-value">
-                  <span :style="{ color: inventoryItem.quantity_on_hand <= inventoryItem.reorder_point ? '#ef4444' : '#10b981' }">
+                  <span
+                    :style="{
+                      color: inventoryItem.quantity_on_hand <= inventoryItem.reorder_point ? '#ef4444' : '#10b981'
+                    }"
+                  >
                     {{ inventoryItem.quantity_on_hand - inventoryItem.reorder_point }} units
                   </span>
                 </div>
@@ -75,7 +87,8 @@
               <div class="info-item">
                 <div class="info-label">Total Value</div>
                 <div class="info-value total-value">
-                  {{ currencySymbol }}{{ totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}
+                  {{ currencySymbol
+                  }}{{ totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
                 </div>
               </div>
 
@@ -105,10 +118,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from '../composables/useI18n'
+import { useModal } from '../composables/useModal'
 
-const { currentCurrency, translateProductName, translateWarehouse } = useI18n()
+const { t, currentCurrency, translateProductName, translateWarehouse } = useI18n()
 
 const currencySymbol = computed(() => {
   return currentCurrency.value === 'JPY' ? '¥' : '$'
@@ -127,6 +141,14 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
+const dialogRef = ref(null)
+
+const close = () => {
+  emit('close')
+}
+
+useModal(() => props.isOpen, close, dialogRef)
+
 const totalValue = computed(() => {
   if (!props.inventoryItem) return 0
   return props.inventoryItem.quantity_on_hand * props.inventoryItem.unit_cost
@@ -136,10 +158,6 @@ const stockPercentage = computed(() => {
   if (!props.inventoryItem || props.inventoryItem.reorder_point === 0) return 0
   return Math.round((props.inventoryItem.quantity_on_hand / props.inventoryItem.reorder_point) * 100)
 })
-
-const close = () => {
-  emit('close')
-}
 
 const getStockStatus = () => {
   if (!props.inventoryItem) return 'Unknown'
@@ -232,6 +250,11 @@ const getSummaryCardClass = () => {
 .close-button:hover {
   background: #f1f5f9;
   color: #0f172a;
+}
+
+.close-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .modal-body {

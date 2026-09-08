@@ -7,6 +7,7 @@ export default {
     finance: 'Finance',
     demandForecast: 'Demand Forecast',
     restocking: 'Restocking',
+    reports: 'Reports',
     companyName: 'Catalyst Components',
     subtitle: 'Inventory Management System',
     collapseSidebar: 'Collapse sidebar',
@@ -67,10 +68,12 @@ export default {
       daysDelayed: 'Days Delayed',
       priority: 'Priority',
       unitsShort: 'units short',
-      days: 'days'
+      days: 'days',
+      viewShortageDetail: 'View shortage details for {name}'
     },
     topProducts: {
       title: 'Top Products by Revenue',
+      viewProductDetail: 'View details for {name}',
       sku: 'SKU',
       product: 'Product',
       category: 'Category',
@@ -92,6 +95,7 @@ export default {
     skus: 'SKUs',
     searchPlaceholder: 'Search by item name...',
     clearSearch: 'Clear search',
+    viewItemDetail: 'View details for {name}',
     exportCsv: 'Export CSV',
     totalItems: 'Total Items',
     totalValue: 'Total Value',
@@ -224,7 +228,8 @@ export default {
       description: 'Description',
       vendor: 'Vendor',
       date: 'Date',
-      amount: 'Amount'
+      amount: 'Amount',
+      viewTransactionDetail: 'View details for transaction {id}'
     }
   },
 
@@ -284,7 +289,8 @@ export default {
     category: 'Category',
     orderStatus: 'Order Status',
     all: 'All',
-    allMonths: 'All Months'
+    allMonths: 'All Months',
+    resetAll: 'Reset all filters'
   },
 
   // Statuses
@@ -390,6 +396,7 @@ export default {
     priority: 'Priority',
     dueDate: 'Due Date',
     addTask: 'Add Task',
+    deleteTask: 'Delete task',
     noTasks: 'No tasks yet. Add your first task above!',
     errorLoad: "Couldn't load your tasks. Try reopening this window.",
     errorAdd: "Couldn't add the task. Please try again.",

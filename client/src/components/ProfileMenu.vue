@@ -1,11 +1,13 @@
 <template>
   <div class="profile-menu">
     <button
+      ref="triggerRef"
       class="profile-button"
       :class="{ collapsed }"
       :data-tooltip="currentUser.name"
+      aria-haspopup="true"
+      :aria-expanded="isDropdownOpen"
       @click="toggleDropdown"
-      @blur="handleBlur"
     >
       <div class="avatar">
         {{ getInitials(currentUser.name) }}
@@ -19,12 +21,13 @@
         height="16"
         viewBox="0 0 16 16"
         fill="none"
+        aria-hidden="true"
       >
         <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
     </button>
 
-    <div v-if="isDropdownOpen" class="dropdown-menu">
+    <div v-if="isDropdownOpen" ref="menuRef" class="dropdown-menu" role="menu" @keydown.esc.prevent="closeDropdown()">
       <div class="dropdown-header">
         <div class="avatar-large">
           {{ getInitials(currentUser.name) }}
@@ -37,8 +40,8 @@
 
       <div class="dropdown-divider"></div>
 
-      <button class="dropdown-item" @mousedown.prevent="showProfileDetails">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <button ref="firstItemRef" class="dropdown-item" role="menuitem" @click="showProfileDetails">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
           <path
             d="M9 9C10.6569 9 12 7.65685 12 6C12 4.34315 10.6569 3 9 3C7.34315 3 6 4.34315 6 6C6 7.65685 7.34315 9 9 9Z"
             stroke="currentColor"
@@ -54,8 +57,8 @@
         {{ t('profile.profileDetails') }}
       </button>
 
-      <button class="dropdown-item" @mousedown.prevent="showTasks">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <button class="dropdown-item" role="menuitem" @click="showTasks">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
           <path
             d="M15 3H3C2.44772 3 2 3.44772 2 4V14C2 14.5523 2.44772 15 3 15H15C15.5523 15 16 14.5523 16 14V4C16 3.44772 15.5523 3 15 3Z"
             stroke="currentColor"
@@ -75,8 +78,8 @@
 
       <div class="dropdown-divider"></div>
 
-      <button class="dropdown-item logout" @mousedown.prevent="handleLogout">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <button class="dropdown-item logout" role="menuitem" @click="handleLogout">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
           <path
             d="M7 15H4C3.44772 15 3 14.5523 3 14V4C3 3.44772 3.44772 3 4 3H7"
             stroke="currentColor"
@@ -98,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { useI18n } from '../composables/useI18n'
@@ -112,38 +115,68 @@ const { t } = useI18n()
 const router = useRouter()
 
 const isDropdownOpen = ref(false)
+const triggerRef = ref(null)
+const menuRef = ref(null)
+const firstItemRef = ref(null)
 const emit = defineEmits(['show-profile-details', 'show-tasks'])
 
 const pendingTaskCount = computed(() => {
   return currentUser.value.tasks.filter((task) => task.status === 'pending').length
 })
 
-const toggleDropdown = () => {
-  isDropdownOpen.value = !isDropdownOpen.value
+// Close the menu when a click/tap lands outside both the menu and its trigger
+const handleOutsideClick = (event) => {
+  if (
+    menuRef.value &&
+    !menuRef.value.contains(event.target) &&
+    triggerRef.value &&
+    !triggerRef.value.contains(event.target)
+  ) {
+    closeDropdown()
+  }
 }
 
-const handleBlur = () => {
-  // Delay to allow mousedown events on dropdown items to fire first
-  setTimeout(() => {
-    isDropdownOpen.value = false
-  }, 200)
+const openDropdown = async () => {
+  isDropdownOpen.value = true
+  document.addEventListener('mousedown', handleOutsideClick)
+  await nextTick()
+  firstItemRef.value?.focus()
+}
+
+const closeDropdown = ({ returnFocus = true } = {}) => {
+  if (!isDropdownOpen.value) return
+  isDropdownOpen.value = false
+  document.removeEventListener('mousedown', handleOutsideClick)
+  if (returnFocus) triggerRef.value?.focus()
+}
+
+const toggleDropdown = () => {
+  if (isDropdownOpen.value) {
+    closeDropdown()
+  } else {
+    openDropdown()
+  }
 }
 
 const showProfileDetails = () => {
-  isDropdownOpen.value = false
+  closeDropdown({ returnFocus: false })
   emit('show-profile-details')
 }
 
 const showTasks = () => {
-  isDropdownOpen.value = false
+  closeDropdown({ returnFocus: false })
   emit('show-tasks')
 }
 
 const handleLogout = () => {
-  isDropdownOpen.value = false
+  closeDropdown({ returnFocus: false })
   logout()
   router.push('/login')
 }
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleOutsideClick)
+})
 </script>
 
 <style scoped>
@@ -167,6 +200,11 @@ const handleLogout = () => {
 .profile-button:hover {
   background: #f8fafc;
   border-color: #cbd5e1;
+}
+
+.profile-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .profile-button.collapsed {
@@ -284,6 +322,12 @@ const handleLogout = () => {
 }
 
 .dropdown-item:hover {
+  background: #f8fafc;
+}
+
+.dropdown-item:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
   background: #f8fafc;
 }
 

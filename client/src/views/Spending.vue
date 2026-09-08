@@ -184,7 +184,16 @@
                   v-for="transaction in recentTransactions"
                   :key="transaction.id"
                   class="clickable-row"
+                  tabindex="0"
+                  role="button"
+                  :aria-label="
+                    t('finance.transactions.viewTransactionDetail', {
+                      id: transaction.id.toString().padStart(3, '0')
+                    })
+                  "
                   @click="handleTransactionClick(transaction)"
+                  @keydown.enter="handleTransactionClick(transaction)"
+                  @keydown.space.prevent="handleTransactionClick(transaction)"
                 >
                   <td class="transaction-id">{{ transaction.id.toString().padStart(3, '0') }}</td>
                   <td class="transaction-description">{{ transaction.description }}</td>
@@ -892,6 +901,11 @@ export default {
 
 .transactions-table tbody tr.clickable-row:hover {
   background: #eff6ff;
+}
+
+.transactions-table tbody tr.clickable-row:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
 }
 
 .transaction-id {

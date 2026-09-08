@@ -2,11 +2,19 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="isOpen" class="modal-overlay" @click="close">
-        <div class="modal-container tasks-modal-container" @click.stop>
+        <div
+          ref="dialogRef"
+          class="modal-container tasks-modal-container"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="tasks-modal-title"
+          tabindex="-1"
+          @click.stop
+        >
           <div class="modal-header">
-            <h3 class="modal-title">{{ t('tasks.title') }}</h3>
-            <button class="close-button" @click="close">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <h3 id="tasks-modal-title" class="modal-title">{{ t('tasks.title') }}</h3>
+            <button class="close-button" :aria-label="t('common.close')" @click="close">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
@@ -82,7 +90,14 @@
                     />
                     <span class="task-title" @click="$emit('toggle-task', task.id)">{{ task.title }}</span>
                   </div>
-                  <button @click="$emit('delete-task', task.id)" class="task-delete-btn" title="Delete task">×</button>
+                  <button
+                    @click="$emit('delete-task', task.id)"
+                    class="task-delete-btn"
+                    :title="t('tasks.deleteTask')"
+                    :aria-label="t('tasks.deleteTask')"
+                  >
+                    ×
+                  </button>
                 </div>
 
                 <div class="task-footer">
@@ -121,6 +136,7 @@
 <script>
 import { ref, computed } from 'vue'
 import { useI18n } from '../composables/useI18n'
+import { useModal } from '../composables/useModal'
 
 export default {
   name: 'TasksModal',
@@ -152,9 +168,13 @@ export default {
       return [...props.tasks]
     })
 
+    const dialogRef = ref(null)
+
     const close = () => {
       emit('close')
     }
+
+    useModal(() => props.isOpen, close, dialogRef)
 
     const handleAddTask = () => {
       if (newTask.value.title.trim() && newTask.value.dueDate) {
@@ -235,6 +255,7 @@ export default {
 
     return {
       t,
+      dialogRef,
       newTask,
       sortedTasks,
       close,
@@ -308,6 +329,16 @@ export default {
 .close-button:hover {
   background: #f1f5f9;
   color: #0f172a;
+}
+
+.close-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.task-delete-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .modal-body {

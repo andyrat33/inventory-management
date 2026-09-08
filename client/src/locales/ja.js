@@ -7,6 +7,7 @@ export default {
     finance: '財務',
     demandForecast: '需要予測',
     restocking: '再入荷',
+    reports: 'レポート',
     companyName: '触媒コンポーネンツ',
     subtitle: '在庫管理システム',
     collapseSidebar: 'サイドバーを折りたたむ',
@@ -67,10 +68,12 @@ export default {
       daysDelayed: '遅延日数',
       priority: '優先度',
       unitsShort: '単位不足',
-      days: '日'
+      days: '日',
+      viewShortageDetail: '{name}の在庫不足の詳細を表示'
     },
     topProducts: {
       title: '収益別トップ製品',
+      viewProductDetail: '{name}の詳細を表示',
       sku: 'SKU',
       product: '製品',
       category: 'カテゴリ',
@@ -92,6 +95,7 @@ export default {
     skus: 'SKU',
     searchPlaceholder: '品目名で検索...',
     clearSearch: '検索をクリア',
+    viewItemDetail: '{name}の詳細を表示',
     exportCsv: 'CSVエクスポート',
     totalItems: '総品目数',
     totalValue: '総価値',
@@ -224,7 +228,8 @@ export default {
       description: '説明',
       vendor: 'ベンダー',
       date: '日付',
-      amount: '金額'
+      amount: '金額',
+      viewTransactionDetail: '取引{id}の詳細を表示'
     }
   },
 
@@ -284,7 +289,8 @@ export default {
     category: 'カテゴリ',
     orderStatus: '注文ステータス',
     all: 'すべて',
-    allMonths: 'すべての月'
+    allMonths: 'すべての月',
+    resetAll: 'すべてのフィルターをリセット'
   },
 
   // Statuses
@@ -390,6 +396,7 @@ export default {
     priority: '優先度',
     dueDate: '期限',
     addTask: 'タスクを追加',
+    deleteTask: 'タスクを削除',
     noTasks: 'タスクがありません。上記からタスクを追加してください！',
     errorLoad: 'タスクを読み込めませんでした。このウィンドウを開き直してください。',
     errorAdd: 'タスクを追加できませんでした。もう一度お試しください。',

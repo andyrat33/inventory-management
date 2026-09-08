@@ -264,30 +264,44 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in backlogItems" :key="item.id">
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer">
+                <tr
+                  v-for="item in backlogItems"
+                  :key="item.id"
+                  class="clickable-row"
+                  tabindex="0"
+                  role="button"
+                  :aria-label="
+                    t('dashboard.inventoryShortages.viewShortageDetail', {
+                      name: translateProductName(item.item_name)
+                    })
+                  "
+                  @click="showBacklogDetail(item)"
+                  @keydown.enter="showBacklogDetail(item)"
+                  @keydown.space.prevent="showBacklogDetail(item)"
+                >
+                  <td>
                     <strong>{{ item.order_id }}</strong>
                   </td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer">
+                  <td>
                     <strong>{{ item.item_sku }}</strong>
                   </td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer">
+                  <td>
                     {{ translateProductName(item.item_name) }}
                   </td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer">{{ item.quantity_needed }}</td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer">{{ item.quantity_available }}</td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer">
+                  <td>{{ item.quantity_needed }}</td>
+                  <td>{{ item.quantity_available }}</td>
+                  <td>
                     <span class="badge danger">
                       {{ Math.abs(item.quantity_needed - item.quantity_available) }}
                       {{ t('dashboard.inventoryShortages.unitsShort') }}
                     </span>
                   </td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer">
+                  <td>
                     <span :style="{ color: item.days_delayed > 7 ? '#ef4444' : '#f59e0b', fontWeight: 600 }">
                       {{ item.days_delayed }} {{ t('dashboard.inventoryShortages.days') }}
                     </span>
                   </td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer">
+                  <td>
                     <span :class="['badge', item.priority]">
                       {{ translatePriority(item.priority) }}
                     </span>
@@ -317,7 +331,17 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in topProducts" :key="item.sku" class="clickable-row" @click="showProductDetail(item)">
+                <tr
+                  v-for="item in topProducts"
+                  :key="item.sku"
+                  class="clickable-row"
+                  tabindex="0"
+                  role="button"
+                  :aria-label="t('dashboard.topProducts.viewProductDetail', { name: translateProductName(item.name) })"
+                  @click="showProductDetail(item)"
+                  @keydown.enter="showProductDetail(item)"
+                  @keydown.space.prevent="showProductDetail(item)"
+                >
                   <td>
                     <strong>{{ translateProductName(item.name) }}</strong>
                   </td>
@@ -1140,6 +1164,11 @@ export default {
 
 .clickable-row:hover {
   background: #eff6ff !important;
+}
+
+.clickable-row:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
 }
 
 /* Tasks Card Styles */

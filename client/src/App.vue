@@ -22,6 +22,7 @@
               height="16"
               viewBox="0 0 16 16"
               fill="none"
+              aria-hidden="true"
             >
               <path
                 d="M10 4L6 8L10 12"
@@ -40,8 +41,16 @@
             class="sidebar-nav-item"
             :class="{ active: $route.path === '/' }"
             :data-tooltip="t('nav.overview')"
+            :aria-label="t('nav.overview')"
           >
-            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+            <svg
+              class="nav-icon"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              aria-hidden="true"
+            >
               <rect x="2.5" y="2.5" width="6" height="6" rx="1" />
               <rect x="11.5" y="2.5" width="6" height="6" rx="1" />
               <rect x="2.5" y="11.5" width="6" height="6" rx="1" />
@@ -55,6 +64,7 @@
             class="sidebar-nav-item"
             :class="{ active: $route.path === '/inventory' }"
             :data-tooltip="t('nav.inventory')"
+            :aria-label="t('nav.inventory')"
           >
             <svg
               class="nav-icon"
@@ -64,6 +74,7 @@
               stroke-width="1.5"
               stroke-linejoin="round"
               stroke-linecap="round"
+              aria-hidden="true"
             >
               <path d="M10 2.5L17.5 6.25V13.75L10 17.5L2.5 13.75V6.25L10 2.5Z" />
               <path d="M2.5 6.25L10 10L17.5 6.25" />
@@ -77,6 +88,7 @@
             class="sidebar-nav-item"
             :class="{ active: $route.path === '/orders' }"
             :data-tooltip="t('nav.orders')"
+            :aria-label="t('nav.orders')"
           >
             <svg
               class="nav-icon"
@@ -86,6 +98,7 @@
               stroke-width="1.5"
               stroke-linejoin="round"
               stroke-linecap="round"
+              aria-hidden="true"
             >
               <rect x="4" y="3.5" width="12" height="14" rx="1.5" />
               <path d="M7.5 2.5H12.5V4.5H7.5V2.5Z" />
@@ -101,6 +114,7 @@
             class="sidebar-nav-item"
             :class="{ active: $route.path === '/spending' }"
             :data-tooltip="t('nav.finance')"
+            :aria-label="t('nav.finance')"
           >
             <svg
               class="nav-icon"
@@ -109,6 +123,7 @@
               stroke="currentColor"
               stroke-width="1.5"
               stroke-linecap="round"
+              aria-hidden="true"
             >
               <path d="M3 17V8" />
               <path d="M8.5 17V3" />
@@ -123,6 +138,7 @@
             class="sidebar-nav-item"
             :class="{ active: $route.path === '/demand' }"
             :data-tooltip="t('nav.demandForecast')"
+            :aria-label="t('nav.demandForecast')"
           >
             <svg
               class="nav-icon"
@@ -132,6 +148,7 @@
               stroke-width="1.5"
               stroke-linecap="round"
               stroke-linejoin="round"
+              aria-hidden="true"
             >
               <path d="M2.5 14.5L7.5 9.5L11 13L17.5 5.5" />
               <path d="M13 5.5H17.5V10" />
@@ -144,6 +161,7 @@
             class="sidebar-nav-item"
             :class="{ active: $route.path === '/restocking' }"
             :data-tooltip="t('nav.restocking')"
+            :aria-label="t('nav.restocking')"
           >
             <svg
               class="nav-icon"
@@ -153,6 +171,7 @@
               stroke-width="1.5"
               stroke-linejoin="round"
               stroke-linecap="round"
+              aria-hidden="true"
             >
               <path d="M10 2.5L17.5 6.25V13.75L10 17.5L2.5 13.75V6.25L10 2.5Z" />
               <path d="M10 10.5V15" />
@@ -165,7 +184,8 @@
             to="/reports"
             class="sidebar-nav-item"
             :class="{ active: $route.path === '/reports' }"
-            data-tooltip="Reports"
+            :data-tooltip="t('nav.reports')"
+            :aria-label="t('nav.reports')"
           >
             <svg
               class="nav-icon"
@@ -175,6 +195,7 @@
               stroke-width="1.5"
               stroke-linejoin="round"
               stroke-linecap="round"
+              aria-hidden="true"
             >
               <path
                 d="M5.5 2.5H11.5L15 6V16C15 16.5523 14.5523 17 14 17H5.5C4.94772 17 4.5 16.5523 4.5 16V3.5C4.5 2.94772 4.94772 2.5 5.5 2.5Z"
@@ -183,7 +204,7 @@
               <path d="M7 10H12" />
               <path d="M7 12.5H12" />
             </svg>
-            <span v-if="!isSidebarCollapsed">Reports</span>
+            <span v-if="!isSidebarCollapsed">{{ t('nav.reports') }}</span>
           </router-link>
         </nav>
 
@@ -483,6 +504,13 @@ body {
   background: #eff6ff;
 }
 
+/* Shared keyboard-focus indicator for interactive chrome elements */
+.sidebar-nav-item:focus-visible,
+.sidebar-toggle:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
 .nav-icon {
   width: 20px;
   height: 20px;
@@ -549,7 +577,8 @@ body {
   z-index: 1100;
 }
 
-.sidebar.collapsed [data-tooltip]:hover::after {
+.sidebar.collapsed [data-tooltip]:hover::after,
+.sidebar.collapsed [data-tooltip]:focus-visible::after {
   opacity: 1;
   visibility: visible;
 }

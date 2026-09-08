@@ -33,8 +33,9 @@
                 @click="searchQuery = ''"
                 class="clear-search"
                 :title="t('inventory.clearSearch')"
+                :aria-label="t('inventory.clearSearch')"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path
                     fill-rule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -69,7 +70,17 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in filteredItems" :key="item.id" class="clickable-row" @click="showItemDetail(item)">
+              <tr
+                v-for="item in filteredItems"
+                :key="item.id"
+                class="clickable-row"
+                tabindex="0"
+                role="button"
+                :aria-label="t('inventory.viewItemDetail', { name: translateProductName(item.name) })"
+                @click="showItemDetail(item)"
+                @keydown.enter="showItemDetail(item)"
+                @keydown.space.prevent="showItemDetail(item)"
+              >
                 <td>
                   <strong>{{ item.sku }}</strong>
                 </td>
@@ -435,6 +446,12 @@ export default {
   color: #64748b;
 }
 
+.clear-search:focus-visible,
+.export-csv-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
 .clear-search svg {
   width: 18px;
   height: 18px;
@@ -458,5 +475,10 @@ export default {
 
 .clickable-row:hover {
   background: #eff6ff !important;
+}
+
+.clickable-row:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
 }
 </style>
