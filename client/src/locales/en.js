@@ -118,6 +118,21 @@ export default {
     }
   },
 
+  // Low-stock alerts
+  alerts: {
+    triggerLabel: 'Low-stock alerts',
+    triggerLabelCount: 'Low-stock alerts, {count} items',
+    title: 'Low-Stock Alerts',
+    empty: 'All items are above their reorder point.',
+    loadError: "Couldn't load alerts.",
+    severity: {
+      critical: 'Critical',
+      low: 'Low'
+    },
+    stockOf: '{qty} / {reorder}',
+    viewAll: 'View in inventory'
+  },
+
   // Orders
   orders: {
     title: 'Orders',

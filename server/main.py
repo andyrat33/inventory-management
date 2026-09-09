@@ -7,7 +7,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from typing import List, Optional
+from typing import List, Literal, Optional
 from datetime import datetime, timedelta
 from pydantic import BaseModel, Field, field_validator
 from mock_data import inventory_items, orders, demand_forecasts, backlog_items, spending_summary, monthly_spending, category_spending, recent_transactions, purchase_orders, restocking_orders, tasks
@@ -142,6 +142,10 @@ class InventoryItem(BaseModel):
     unit_cost: float
     location: str
     last_updated: str
+
+class LowStockAlert(InventoryItem):
+    # "critical" = out of stock or at/below half the reorder point; "low" = at/below it
+    severity: Literal["critical", "low"]
 
 class Order(BaseModel):
     id: str
@@ -337,6 +341,36 @@ def get_inventory(
 ):
     """Get all inventory items with optional filtering"""
     return apply_filters(inventory_items, warehouse, category)
+
+def _stock_severity(item: dict) -> Optional[str]:
+    """'critical' if out of stock or at/below half the reorder point, 'low' if
+    at/below it, otherwise None (item is adequately stocked)."""
+    qty, reorder = item.get("quantity_on_hand", 0), item.get("reorder_point", 0)
+    if qty > reorder:
+        return None
+    return "critical" if qty == 0 or qty * 2 <= reorder else "low"
+
+# NOTE: must be declared before /api/inventory/{item_id} or FastAPI would match
+# "low-stock" as an item_id and 404.
+@app.get("/api/inventory/low-stock", response_model=List[LowStockAlert])
+def get_low_stock_alerts(
+    warehouse: Optional[str] = None,
+    category: Optional[str] = None
+):
+    """Inventory items at or below their reorder point, tagged with a severity
+    and sorted critical-first then by how far below the reorder point they sit."""
+    alerts = []
+    for item in apply_filters(inventory_items, warehouse, category):
+        severity = _stock_severity(item)
+        if severity:
+            alerts.append({**item, "severity": severity})
+
+    severity_rank = {"critical": 0, "low": 1}
+    alerts.sort(key=lambda a: (
+        severity_rank[a["severity"]],
+        a["quantity_on_hand"] - a["reorder_point"],
+    ))
+    return alerts
 
 @app.get("/api/inventory/{item_id}", response_model=InventoryItem)
 def get_inventory_item(item_id: str):

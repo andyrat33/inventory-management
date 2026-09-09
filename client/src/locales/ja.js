@@ -118,6 +118,21 @@ export default {
     }
   },
 
+  // Low-stock alerts
+  alerts: {
+    triggerLabel: '在庫僅少アラート',
+    triggerLabelCount: '在庫僅少アラート、{count}件',
+    title: '在庫僅少アラート',
+    empty: 'すべての品目が再注文点を上回っています。',
+    loadError: 'アラートを読み込めませんでした。',
+    severity: {
+      critical: '緊急',
+      low: '僅少'
+    },
+    stockOf: '{qty} / {reorder}',
+    viewAll: '在庫で表示'
+  },
+
   // Orders
   orders: {
     title: '注文',

@@ -121,6 +121,7 @@
 
 <script>
 import { ref, onMounted, watch, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { api } from '../api'
 import { useFilters } from '../composables/useFilters'
 import { useI18n } from '../composables/useI18n'
@@ -135,6 +136,7 @@ export default {
   setup() {
     const { t, currentCurrency, translateProductName, translateWarehouse } = useI18n()
     const { translateCategory } = useTranslations()
+    const route = useRoute()
 
     const currencySymbol = computed(() => {
       return currentCurrency.value === 'JPY' ? '¥' : '$'
@@ -201,6 +203,8 @@ export default {
           warehouse: filters.warehouse,
           category: filters.category
         })
+        // Open the detail modal if we were deep-linked to a specific SKU
+        openFromQuery()
       } catch (err) {
         error.value = 'Failed to load inventory: ' + err.message
       } finally {
@@ -209,10 +213,21 @@ export default {
       }
     }
 
+    // If ?item=<sku> is present, open that item's detail modal (no-op if not found)
+    const openFromQuery = () => {
+      const sku = route.query.item
+      if (!sku) return
+      const match = items.value.find((it) => it.sku === sku)
+      if (match) showItemDetail(match)
+    }
+
     // Watch for filter changes and reload data
     watch([selectedLocation, selectedCategory], () => {
       loadInventory()
     })
+
+    // React to deep-link changes without a full reload when data is already loaded
+    watch(() => route.query.item, openFromQuery)
 
     const getStockStatus = (item) => {
       const key = getStockStatusKey(item)

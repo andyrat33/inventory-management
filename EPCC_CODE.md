@@ -1,37 +1,42 @@
-# Implementation: CSV Export on Inventory Page
+# Implementation: Low-Stock Alerts
 
-**Mode**: default | **Date**: 2026-09-07 | **Status**: Complete
+**Mode**: default | **Date**: 2026-09-08 | **Status**: Complete
+**Branch**: `feat/low-stock-alerts` (off `origin/main`) | **Commit**: `309bd79`
 
-## 1. Changes (3 files, +175 -40 lines, no test suite for frontend)
+## 1. Changes (9 files, +609 −6)
 
-**Modified**: `client/src/views/Inventory.vue`
+**Created**
 
-- Template: wrapped `.search-box` in a new `.header-actions` flex container; added an `Export CSV` button beside it (`:disabled` when `filteredItems` is empty, `aria-label` + label via `t('inventory.exportCsv')`).
-- `setup()`: added `CSV_STATUS_LABELS` (locale-independent status text), `escapeCsvField()` (RFC-4180 style quoting), and `exportToCsv()` — serializes the current `filteredItems` (search + shared warehouse/category filters + status sort already applied) to CSV and downloads via `Blob` + temporary `<a>` + `URL.revokeObjectURL`. Filename `inventory-export-YYYY-MM-DD.csv`.
-- Scoped styles: `.header-actions`, `.export-csv-btn` (matches `Restocking.vue` `.place-order-btn` precedent).
+- `server/main.py` `GET /api/inventory/low-stock` (+`_stock_severity`, `LowStockAlert` model) — items with `quantity_on_hand <= reorder_point`, each tagged `severity` `"critical"` (qty 0 or `qty*2 <= reorder_point`) / `"low"`; sorted critical-first then by deficit; `warehouse`/`category` filters. **Declared before `/api/inventory/{item_id}`** so `low-stock` isn't parsed as an id.
+- `client/src/components/AlertsBell.vue` — bell trigger + count badge + upward dropdown; fetches on mount, every 60s, and on open; rows show severity dot / SKU / name / `qty / reorder` / warehouse / Low·Critical pill; row → `/inventory?item=<sku>`, footer → `/inventory`.
+- `tests/backend/test_low_stock.py` — 12 tests (endpoint shape, severity rule, sort, route-collision, filters; a fixture injects critical items since seed data has none).
 
-**Modified**: `client/src/locales/en.js` — `inventory.exportCsv: 'Export CSV'`
-**Modified**: `client/src/locales/ja.js` — `inventory.exportCsv: 'CSVエクスポート'`
+**Modified**
 
-## 2. Quality (Tests n/a | Build clean | Docs updated)
+- `client/src/App.vue` — mount `<AlertsBell>` first in `.sidebar-footer`.
+- `client/src/views/Inventory.vue` — `useRoute()`; after load + on `route.query.item` change, open the matching item's detail modal.
+- `client/src/api.js` — `getLowStockAlerts(filters)`.
+- `client/src/locales/{en,ja}.js` — `alerts.*` block.
+- `client/src/composables/useFilters.js` — `prettier --write` (CI `format:check` parity; non-functional).
 
-- **Build**: `vite build` succeeds — 118 modules, no errors/warnings.
-- **Tests**: no frontend test suite in repo; change is client-only so backend pytest suite is unaffected.
-- **E2E (Playwright)**: verified against `localhost:3000` —
-  - Full export: 32 data rows + header, filename `inventory-export-2026-09-07.csv`, MIME `text/csv;charset=utf-8;`, row order matches on-screen status sort, values raw (no `$`, no thousands separators), `±` char preserved.
-  - Filtered export (search "servo"): CSV contained exactly the 2 visible rows.
-  - Empty state (no search matches): button `disabled`, `cursor: not-allowed`, grey background, click is a no-op.
-  - Console clean apart from a pre-existing `favicon.ico` 404.
+## 2. Quality (Tests: 98 pass, +12 | Build: clean | Docs: EPCC only)
+
+- **Backend**: `pytest tests/backend` → 98 passed. New file covers happy path, the tiered-severity rule (incl. injected critical items), critical-first sort, the `{item_id}` route-collision, and both filters.
+- **Frontend**: `vite build` clean (125 modules); `prettier --check` clean. No frontend test suite.
+- **E2E (Playwright)**: bell badge shows `4`; dropdown lists the 4 low items; keyboard open → focus first row → Escape → focus returns to trigger; clicking a row lands on `/inventory?item=SRV-301` with the detail modal open; JP locale translates the panel. Console clean.
 
 ## 3. Decisions
 
-- **Client-side export, no backend**: dataset is already fully loaded in the view; a `/api/inventory/export` endpoint would duplicate filtering logic for no benefit.
-- **Export = what's on screen**: reuses the existing `filteredItems` computed so the CSV always matches the visible/sorted/filtered table.
-- **Raw values, English status labels**: CSV carries unformatted numbers (no currency symbol) and `item.name`/`item.category` raw, so exports are stable regardless of UI locale.
-- **Formatter churn**: repo Prettier hook reflowed unrelated lines in `Inventory.vue` on save; diff is larger than the logical change.
+- **Bell in the sidebar footer** (not a dedicated page) — matches the app's existing dropdown pattern (`LanguageSwitcher`/`ProfileMenu`); `AlertsBell.vue` is a near-clone of `LanguageSwitcher.vue` for consistent a11y.
+- **Severity computed server-side** on the alert response, not stored — mock data has no persistence; keeps the client dumb.
+- **No `critical` items in seed data** — the tier is fully wired (dot colour, `.badge.danger`, `alerts.severity.critical`) and unit-tested via an injected-item fixture, but not visually exercised. Lowering a seed item to demo it would be data fudging; left as-is.
+- **Deep-link via `?item=<sku>`** rather than a new route — reuses `Inventory.vue`'s existing `showItemDetail`.
 
 ## 4. Handoff
 
-**Run**: `/epcc-workflow:epcc-commit` when ready.
+**Run**: `/epcc-commit` (branch pushed + PR next).
 **Blockers**: None.
-**TODOs**: Optional — visual E2E check via Playwright against `http://localhost:3000`. Unrelated messy `getLowStockAlerts` in `client/src/api.js` is still staged in the working tree from an earlier request.
+**TODOs**:
+
+- Base is `origin/main`; CI (`ci-workflow`, PR #5) and the Reports fix (`reports-fix`, PR #6) are still open — merge order doesn't matter for this branch but rebasing after they land is tidy.
+- If a `critical` example is wanted in the demo, adjust one row in `server/data/inventory.json`.
